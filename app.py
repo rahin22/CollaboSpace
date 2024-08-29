@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
@@ -27,6 +27,10 @@ socketio = SocketIO(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Register blueprints
 app.register_blueprint(auth_bp)
