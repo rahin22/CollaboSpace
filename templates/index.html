@@ -3,14 +3,67 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {{ head_imports() }}
     <title>My Website</title>
 </head>
+
 <body>
-    <h1>Welcome to My Website</h1>
-    
+    <nav class="navbar navbar-expand-lg sticky-top" id="index-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Navbar scroll</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+                aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Link</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex" style="gap: 10px;">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-index p-5" style="font-family: Poppins; min-height: 100vh;">
+        <h1 class="text-center">Everything All in <span style="color: var(--secondary-color);">One Place</span></h1>
+    </div>
+
+
     {{ bootstrap_scripts() }}
     <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+    <script>
+        navBar = document.getElementById('index-nav');
+        window.onscroll = function () {
+            if (window.scrollY > 0) {
+                navBar.style.backgroundColor = 'var(--secondary-color)';
+            } else {
+                navBar.style.backgroundColor = 'transparent';
+                navBar.style.boxShadow = 'none';
+            }
+        }
+
+    </script>
 </body>
+
 </html>

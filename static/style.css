@@ -1,0 +1,30 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+:root {
+    /* Font Sizes */
+    --largest-font: 112px;
+    --larger-font: 70px;
+    --large-font: 34px;
+    --text-large-font: 20px;
+    --text-font: 16px;
+
+    /* Font Colours */
+    --text-color: #000;
+    --hover-color: #003c6d;
+    --dark-color: #000;
+    --bg-color: #ffff;
+    --secondary-color: #1093ff;
+    --search-bar-color: #f3f3f3;
+    --nav-hover-color: #003c6d;
+}
+
+#index-nav{
+    transition : 0.5s;
+    height: 70px;
+    font-family: "Poppins";
+}

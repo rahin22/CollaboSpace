@@ -4,8 +4,6 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 import os, base64
 from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, EmployeeInfo, Salary, Message, FileAttachment
-
-# Import your blueprints
 from entities.auth import auth as auth_bp
 
 
