@@ -46,25 +46,32 @@
     </nav>
 
     <div class="main-index p-5" style="font-family: Poppins; min-height: 100vh;">
-        <img src="{{ url_for('static', filename= 'assets/' + 'image.png') }}" class="img-fluid" style="height: 200px;">
-        <h1 class="text-left main-title">Everything All in <span style="color: var(--secondary-color);">One Place</span></h1>
-        <h1 class="text-left">of Untitled UI</h1>
+        <img src="{{ url_for('static', filename= 'assets/images/' + 'logo.png') }}" class="img-fluid d-block mx-auto rise-in" style="height: 300px;">
+        <h1 class="text-center main-title">Do more with <span class="highlight"><span class="word">Collabo</span><span class="word">space</span></span></h1>
+        <button class="d-block mx-auto p-2 gs-button" type="button">Get Started</button>
     </div>
+    
  
 
     {{ bootstrap_scripts() }}
     <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
     <script>
-        navBar = document.getElementById('index-nav');
-        window.onscroll = function () {
-            if (window.scrollY > 0) {
-                navBar.style.backgroundColor = 'var(--secondary-color)';
-            } else {
-                navBar.style.backgroundColor = 'transparent';
-                navBar.style.boxShadow = 'none';
-            }
-        }
+          navBar = document.getElementById('index-nav');
+        // window.onscroll = function () {
+        //      if (window.scrollY > 0) {
+        //           navBar.style.backgroundColor = 'var(--secondary-color)';
+        //     } else {
+        //         navBar.style.backgroundColor = 'transparent';
+        //       navBar.style.boxShadow = 'none';
+        //    }
+        //  }
 
+        window.addEventListener('load', function () {
+            const img = document.querySelector('.rise-in');
+            setTimeout(() => {
+                img.classList.add('rise-in-loaded');
+            }, 1000);  
+        });
     </script>
 </body>
 

@@ -23,17 +23,89 @@
     --nav-hover-color: #003c6d;
 }
 
-#index-nav{
-    transition : 0.5s;
+/* Landing Page Styles */
+
+#index-nav {
+    transition: 0.5s;
     height: 70px;
     font-family: "Poppins";
+    background-color: var(--secondary-color);
 }
 
-.main-title{
-    margin-top: 20vh;
+.main-index {
+    background-color: var(--secondary-color);
 }
 
-.main-index h1{
+.main-title {
+    color: var(--bg-color);
+}
+
+.main-index h1 {
     font-weight: 700;
     font-size: var(--larger-font);
 }
+
+.rise-in {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: transform 1s ease-out, opacity 1s ease-out;
+}
+
+.rise-in-loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.highlight {
+    white-space: nowrap;
+}
+
+.highlight .word {
+    display: inline-block;
+    opacity: 0;
+    animation: textShadowHighlight 1s ease forwards;
+    color: transparent;
+}
+
+.highlight .word:nth-child(1) {
+    animation-delay: 0.5s;
+}
+
+.highlight .word:nth-child(2) {
+    animation-delay: 1.5s;
+}
+
+@keyframes textShadowHighlight {
+    0% {
+        opacity: 0;
+        text-shadow: none;
+    }
+
+    50% {
+        opacity: 1;
+        color: var(--secondary-color);
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    100% {
+        opacity: 1;
+        color: var(--bg-color);
+    }
+}
+
+.gs-button {
+    margin-top: 40px;
+    width: 15vw;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    transition: all 0.5s;
+}
+
+.gs-button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    color: var(--bg-color);
+}
+
+/* Landing Page Styles */
