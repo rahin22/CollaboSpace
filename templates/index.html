@@ -6,13 +6,19 @@
 
 <head>
     {{ head_imports() }}
+    <style>
+        .card{
+            border: none;
+        }
+    </style>
     <title>My Website</title>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg sticky-top" id="index-nav">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Navbar scroll</a>
+            <img src="{{ url_for('static', filename= 'assets/images/' + 'logo.png') }}" class="img-fluid" style="height: 50px;">
+            <a class="navbar-brand fw-bold" href="#" style="color: var(--bg-color);">Collabospace </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
                 aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -20,13 +26,13 @@
             <div class="collapse navbar-collapse" id="navbarScroll">
                 <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        <a class="nav-link active" aria-current="page" href="#" style="color: var(--bg-color);">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
+                        <a class="nav-link" href="#" style="color: var(--bg-color);">Link</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Link</a>
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--bg-color);">Link</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">Action</a></li>
                             <li><a class="dropdown-item" href="#">Another action</a></li>
@@ -38,8 +44,8 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav d-flex" style="gap: 10px;">
-                    <button class="btn btn-outline-dark" type="button">Search</button>
-                    <button class="btn btn-outline-dark" type="button">Search</button>
+                    <button class="btn btn-outline-light" type="button">Login</button>
+                    <button class="btn btn-outline-light" type="button">Get Started</button>
                 </form>
             </div>
         </div>
@@ -50,21 +56,156 @@
         <h1 class="text-center main-title">Do more with <span class="highlight"><span class="word">Collabo</span><span class="word">space</span></span></h1>
         <button class="d-block mx-auto p-2 gs-button" type="button">Get Started</button>
     </div>
+
+    <div class="landing-pm mb-2" style="font-family: Poppins; min-height: 100vh;">
+        <h1 class="pm-title text-center p-5">What We <span style="color: var(--secondary-color);">Offer</span></h1>
+        <div class="container px-4">
+
+            <div class="row r-one">
+
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Manage Projects</h5>
+                                    <p class="card-text">Create, track, and assign tasks to keep your team aligned and efficient.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingProject.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Collaborate in Real-Time</h5>
+                                    <p class="card-text">Communicate with team members via chat, video, or forums for seamless collaboration.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingCollaborate.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+            </div>
+
+
+            <div class="row mt-5 r-two">
+    
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Secure File Sharing</h5>
+                                    <p class="card-text">Easily share documents and files within your team.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingFileSharing.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Handle Employee Data</h5>
+                                    <p class="card-text">Manage employee profiles, roles, and salary information.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingEmployeeData.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+
+            <div class="row mt-5 r-three">
+
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Streamline Schedules</h5>
+                                    <p class="card-text">Track deadlines and ensure projects stay on time with integrated scheduling.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingSchedule.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+ 
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body shadow">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5 class="card-title fw-bold">Manage Billing</h5>
+                                    <p class="card-text">Handle invoicing and payments for projects within the platform.</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <img src="{{ url_for('static', filename= 'assets/images/' + 'landingBilling.png') }}" class="img-fluid" style="height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>    
+
+        </div>
+    </div>
+
+
+    <div class="landing-footer" style="font-family: Poppins; min-height: 50vh;">
+        <h1 class="text-center display-5 fw-bold">Your All-in-One Workplace Solution.</h1>
+        <h4 class="text-center mt-5" style="transform: translateY(40px); color: var(--bg-color);">I am an:</h4>
+        
+        <div class="btn-group d-flex justify-content-center mt-4" role="group" aria-label="Basic example">
+            <button class="p-2 ft-button me-2" type="button">Enterprise</button>
+            <button class="p-2 ft-button shadow-lg border" id="employee-button" type="button">Employee</button>
+        </div>
+    </div>
+
+    <div class="footer-cr" style="font-family: Poppins;">
+        <h5 class="text-center p-3">Collabospace, 2024</h5>
+    </div>
+    
     
  
 
     {{ bootstrap_scripts() }}
     <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
     <script>
-          navBar = document.getElementById('index-nav');
-        // window.onscroll = function () {
-        //      if (window.scrollY > 0) {
-        //           navBar.style.backgroundColor = 'var(--secondary-color)';
-        //     } else {
-        //         navBar.style.backgroundColor = 'transparent';
-        //       navBar.style.boxShadow = 'none';
-        //    }
-        //  }
+        navBar = document.getElementById('index-nav');
+        window.onscroll = function () {
+            if (window.scrollY > 0) {
+                navBar.style.backgroundColor = 'var(--secondary-color)';
+            } else {
+                navBar.style.backgroundColor = 'var(--secondary-color)';
+                navBar.style.boxShadow = 'none';
+            }
+        }
 
         window.addEventListener('load', function () {
             const img = document.querySelector('.rise-in');

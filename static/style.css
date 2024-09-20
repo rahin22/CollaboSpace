@@ -67,6 +67,11 @@
     color: transparent;
 }
 
+.navbar>.container-fluid{
+    background-color: var(--secondary-color);
+    padding: 20px;
+}
+
 .highlight .word:nth-child(1) {
     animation-delay: 0.5s;
 }
@@ -107,5 +112,80 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     color: var(--bg-color);
 }
+
+.pm-title{
+    font-size: var(--large-font);
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.card-body{
+    border-radius: 10px;
+    transition: all 0.5s;
+}
+
+.r-one > div:nth-child(even) .card-body{
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.r-one > div:nth-child(odd) .card-body{
+    background-color: var(--bg-color);
+}
+
+.r-two > div:nth-child(odd) .card-body{
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.r-two > div:nth-child(even) .card-body{
+    background-color: var(--bg-color);
+}
+
+.r-three > div:nth-child(even) .card-body{
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.r-three > div:nth-child(odd) .card-body{
+    background-color: var(--bg-color);
+}
+
+
+.landing-footer{
+    background: var(--secondary-color);
+    clip-path: ellipse(65% 75% at center top);
+}
+
+.landing-footer h1{
+    color: var(--bg-color);
+    transform: translateY(70px);
+}
+
+.ft-button {
+    margin-top: 40px;
+    width: 15vw;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    transition: all 0.5s;
+}
+
+.ft-button:hover {
+    scale: 0.97;
+}
+
+#employee-button{
+    background-color: var(--secondary-color);
+    color: var(--bg-color);
+}
+
+.footer-cr{
+    border-top: #d4d2d2 1px solid;
+}
+
+
+
+
 
 /* Landing Page Styles */
