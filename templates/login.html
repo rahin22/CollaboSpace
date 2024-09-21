@@ -1,0 +1,122 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+{% from "macros/logo.html" import svg_logo %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{ head_imports() }}
+    <title>Login</title>
+    <style>
+        .logo-fill{
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1{
+            height: 37px;
+            width: auto;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-header d-flex flex-row justify-content-center mt-4" onclick="redirHome()">
+        {{ svg_logo() }}
+        <h3 class="text-center fw-bold" style="font-family: Poppins;">Collabospace</h3>
+    </div>
+
+    <form class="mt-5" id="loginForm" method="POST" action="{{ url_for('authorise.login') }}">
+        <h1 class="text-center fw-bold">Welcome Back</h1>
+        <h5 class="text-center mt-4 fw-normal mb-4">Please login with your email and password</h5>
+
+        <div class="form-group d-flex justify-content-center">
+            <input type="text" class="form-control w-50" id="email_or_username" name="email_or_username" placeholder="Email or Username" required>
+        </div>
+        <p class="text-center mt-2" id="email-feedback"></p>
+
+        <div class="form-group d-flex justify-content-center mt-4">
+            <div class="input-group w-50">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                <span class="input-group-text">
+                    <i class="ri-eye-off-line" id="password-icon" style="cursor: pointer;" onclick="togglePassword('password')"></i>
+                </span>
+            </div>
+        </div>
+
+        <p class="text-center mt-2" id="password-feedback"></p>
+
+        <div class="d-flex justify-content-center mt-4">
+            <button class="btn btn-primary w-50" id="login-button" type="submit">Login</button>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+            <div id="error-message" class="alert alert-danger d-none w-50"></div>
+        </div>
+      
+
+        <div class="d-flex mt-4 align-items-center"> 
+            <hr class="my-auto" style="flex: 1 0 40%;"/> 
+            <div class="px-4">OR</div>
+            <hr class="my-auto" style="flex: 1 0 40%;"/> 
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-light w-50" style="border: 1px solid #ddd" onclick="location.href='/google_auth'"> 
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 20px; height: 20px;">
+                Continue with Google
+            </button>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <div class="text-center">Don't have an account? <a href="/register">Register</a></div>
+        </div>
+    </form>
+
+    {{ bootstrap_scripts() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <script>
+        // Password visibility toggle
+        function togglePassword(field) {
+            const passwordField = document.getElementById(field);
+            const icon = document.getElementById(field + '-icon');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+            }
+        }
+
+        // Login Validation
+        document.querySelector('#loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/login', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        document.querySelector('#email_or_username').classList.add('is-invalid');
+                        document.querySelector('#password').classList.add('is-invalid');
+
+                        document.querySelector('#error-message').textContent = data.message;
+                        document.querySelector('#error-message').classList.remove('d-none');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+
+</html>

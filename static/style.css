@@ -67,7 +67,7 @@
     color: transparent;
 }
 
-.navbar>.container-fluid{
+.navbar>.container-fluid {
     background-color: var(--secondary-color);
     padding: 20px;
 }
@@ -113,51 +113,51 @@
     color: var(--bg-color);
 }
 
-.pm-title{
+.pm-title {
     font-size: var(--large-font);
     font-weight: 700;
     color: var(--text-color);
 }
 
-.card-body{
+.card-body {
     border-radius: 10px;
     transition: all 0.5s;
 }
 
-.r-one > div:nth-child(even) .card-body{
+.r-one>div:nth-child(even) .card-body {
     background-color: var(--secondary-color);
     color: var(--bg-color);
 }
 
-.r-one > div:nth-child(odd) .card-body{
+.r-one>div:nth-child(odd) .card-body {
     background-color: var(--bg-color);
 }
 
-.r-two > div:nth-child(odd) .card-body{
+.r-two>div:nth-child(odd) .card-body {
     background-color: var(--secondary-color);
     color: var(--bg-color);
 }
 
-.r-two > div:nth-child(even) .card-body{
+.r-two>div:nth-child(even) .card-body {
     background-color: var(--bg-color);
 }
 
-.r-three > div:nth-child(even) .card-body{
+.r-three>div:nth-child(even) .card-body {
     background-color: var(--secondary-color);
     color: var(--bg-color);
 }
 
-.r-three > div:nth-child(odd) .card-body{
+.r-three>div:nth-child(odd) .card-body {
     background-color: var(--bg-color);
 }
 
 
-.landing-footer{
+.landing-footer {
     background: var(--secondary-color);
     clip-path: ellipse(65% 75% at center top);
 }
 
-.landing-footer h1{
+.landing-footer h1 {
     color: var(--bg-color);
     transform: translateY(70px);
 }
@@ -175,17 +175,21 @@
     scale: 0.97;
 }
 
-#employee-button{
+#employee-button {
     background-color: var(--secondary-color);
     color: var(--bg-color);
 }
 
-.footer-cr{
+.footer-cr {
     border-top: #d4d2d2 1px solid;
 }
 
-
-
-
-
 /* Landing Page Styles */
+
+/* Login & Register Page Styles */
+
+.form-header {
+    cursor: pointer;
+}
+
+/* Login & Register Page Styles */

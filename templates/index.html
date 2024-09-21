@@ -44,8 +44,8 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav d-flex" style="gap: 10px;">
-                    <button class="btn btn-outline-light" type="button">Login</button>
-                    <button class="btn btn-outline-light" type="button">Get Started</button>
+                    <a href="/login" class="btn btn-outline-light">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Get Started</a>
                 </form>
             </div>
         </div>
@@ -54,7 +54,7 @@
     <div class="main-index p-5" style="font-family: Poppins; min-height: 100vh;">
         <img src="{{ url_for('static', filename= 'assets/images/' + 'logo.png') }}" class="img-fluid d-block mx-auto rise-in" style="height: 300px;">
         <h1 class="text-center main-title">Do more with <span class="highlight"><span class="word">Collabo</span><span class="word">space</span></span></h1>
-        <button class="d-block mx-auto p-2 gs-button" type="button">Get Started</button>
+        <button class="d-block mx-auto p-2 gs-button" type="button" onclick="redirRegister()">Get Started</button>
     </div>
 
     <div class="landing-pm mb-2" style="font-family: Poppins; min-height: 100vh;">
@@ -213,6 +213,10 @@
                 img.classList.add('rise-in-loaded');
             }, 1000);  
         });
+
+        function redirRegister() {
+            window.location.href = '/register';
+        }
     </script>
 </body>
 
