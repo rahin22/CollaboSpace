@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, EmployeeInfo, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
 import os, random
 from authlib.integrations.flask_client import OAuth
 
@@ -108,3 +108,11 @@ def check_username(username):
         return jsonify({'available': False})
     else:
         return jsonify({'available': True})
+    
+
+
+@authorise.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('authorise.login'))

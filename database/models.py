@@ -35,15 +35,18 @@ class Role(db.Model):
 
 # Organizations Table
 class Organization(db.Model):
+    __tablename__ = 'organization' 
     id = db.Column(db.Integer, primary_key=True)
     organization_name = db.Column(db.String(100), unique=True, nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    join_code = db.Column(db.String(6), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
 
     workplaces = db.relationship('Workplace', backref='organization', lazy=True)
-    employees = db.relationship('EmployeeInfo', backref='organization', lazy=True)
+    employees = db.relationship('Employee_Info', backref='organization', lazy=True)
 
 # Workplaces Table
 class Workplace(db.Model):
@@ -59,6 +62,7 @@ class Workplace(db.Model):
 
 # User_Workplaces Table (Associative Table)
 class User_Workplace(db.Model):
+    __tablename__ = 'user_workplace' 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=False)
@@ -100,18 +104,19 @@ class Task(db.Model):
     files = db.relationship('FileAttachment', backref='task', lazy=True)
 
 # Employee Info Table
-class EmployeeInfo(db.Model):
+class Employee_Info(db.Model):
+    __tablename__ = 'employee_info' 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    employee_number = db.Column(db.String(50), unique=True)
-    department = db.Column(db.String(100))
     position = db.Column(db.String(100))
     salary = db.Column(db.Numeric(10, 2))
-    date_of_joining = db.Column(db.DateTime)
+    date_of_joining = db.Column(db.DateTime, default=datetime.now())
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
     manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+
+
 
 # Salaries Table
 class Salary(db.Model):

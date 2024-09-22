@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO
 import os, base64
 from authlib.integrations.flask_client import OAuth
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, EmployeeInfo, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
 from entities.authorise import authorise as auth_bp
 from entities.overview import overview as over_bp
 
@@ -51,6 +51,7 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
+    logout_user()
     return render_template('index.html')
 
 

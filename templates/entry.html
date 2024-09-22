@@ -1,20 +1,192 @@
 {% from "macros/imports.html" import head_imports %}
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
+{% from "macros/organisations.html" import employee_organisation %}
+{% from "macros/entryModals.html" import employee_modal %}
+{% from "macros/entryModals.html" import admin_modal %}
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     {{ head_imports() }}
-    <title>Register</title>
+    <title>Welcome</title>
+    <style>
+        .logo-fill {
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1 {
+            height: 37px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .add-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-card:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 
 <body>
-    <h1>{{username}}</h1>
+    <div class="form-header d-flex flex-row justify-content-center mt-4" onclick="redirHome()">
+        {{ svg_logo() }}
+        <h3 class="text-center fw-bold" style="font-family: Poppins;">Collabospace</h3>
+    </div>
+    <div class="d-flex justify-content-center mt-4">
+        <h1 class="fw-bold">Welcome {{current_user.first_name}} {{current_user.last_name}}</h1>
+    </div>
+
+    <ul class="nav nav-pills d-flex justify-content-center gap-3 mt-3">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#" id="employeePill"
+                onclick="showContainer(this.id, event)">Employee</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="adminPill" onclick="showContainer(this.id, event)">Admin</a>
+        </li>
+    </ul>
+
+    <div class="container mt-5 employee-container">
+        <div class="row justify-content-center">
+            {% for organization in organizations %}
+            {{ employee_organisation(organization) }}
+            {% endfor %}
+
+            <div class="col-md-2">
+                <div class="card add-card" onclick="showModal(employeeModal)">
+                    <img src="{{ url_for('static', filename= 'assets/images/' + 'add.jpg') }}"
+                        class="organisation-card-image">
+                    <div class="card-body text-center">
+                        <h5>Join Organisation</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="container mt-5 admin-container" style="display: none;">
+        <div class="row justify-content-center gap-2">
+            {% for admins in user_admins %}
+            {{ employee_organisation(admins) }}
+            {% endfor %}
+
+            <div class="col-md-2">
+                <div class="card add-card" onclick="showModal(adminModal)">
+                    <img src="{{ url_for('static', filename= 'assets/images/' + 'add.jpg') }}"
+                        class="organisation-card-image">
+                    <div class="card-body text-center">
+                        <h5>Create an Organisation</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-center mt-5">
+            <p>Wrong account? <a href="/logout" class="link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Logout</a></p>
+        </div>
+    </div>
+
+
+    {{ employee_modal(current_user) }}
+    {{ admin_modal() }}
+
+
 
     {{ bootstrap_scripts() }}
     <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+    <script>
+        function showContainer(id, event) {
+            event.preventDefault();
+
+            if (id === 'employeePill') {
+                document.querySelector('.employee-container').style.display = 'block';
+                document.querySelector('.admin-container').style.display = 'none';
+                document.getElementById('employeePill').classList.add('active');
+                document.getElementById('adminPill').classList.remove('active');
+            } else {
+                document.querySelector('.employee-container').style.display = 'none';
+                document.querySelector('.admin-container').style.display = 'block';
+                document.getElementById('adminPill').classList.add('active');
+                document.getElementById('employeePill').classList.remove('active');
+            }
+        }
+
+        function showModal(id) {
+            var Modal = new bootstrap.Modal(id);
+            Modal.show();
+        }
+
+        function checkOrganisationName(){
+            const organizationValue = document.getElementById('orgName').value;
+            const organizationInput = document.getElementById('orgName');
+            const feedback = document.getElementById('orgName-feedback');
+            const submitButton = document.getElementById('orgSubmitButton');
+
+            if (document.getElementById('orgName').value.length > 0) {
+                fetch(`/check_organization/${organizationValue}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            feedback.textContent = 'Organization name is available';
+                            feedback.style.color = 'green';
+                            organizationInput.classList.add('is-valid');
+                            organizationInput.classList.remove('is-invalid');
+                            submitButton.disabled = false;
+                        } else {
+                            feedback.textContent = 'This organization name already exists on this account.';
+                            feedback.style.color = 'red';
+                            organizationInput.classList.add('is-invalid');
+                            organizationInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        }
+                    });
+                 
+            } else {
+                document.getElementById('orgName').classList.remove('is-valid', 'is-invalid');
+            }
+        }
+
+        function checkJoinCode() {
+            const joinValue = document.getElementById('joiningCode').value;
+            const joinInput = document.getElementById('joiningCode');
+            const feedback = document.getElementById('joinCode-feedback');
+            const submitButton = document.getElementById('joinCodeSubmit');
+
+            if (joinValue.length > 0) {
+                fetch(`/check_code/${joinValue}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        feedback.textContent = data.message;
+                        if (data.available) {
+                            feedback.style.color = 'green';
+                            joinInput.classList.add('is-valid');
+                            joinInput.classList.remove('is-invalid');
+                            submitButton.disabled = false;
+                        } else {
+                            feedback.style.color = 'red';
+                            joinInput.classList.add('is-invalid');
+                            joinInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        }
+                    });
+            } else {
+                joinInput.classList.remove('is-valid', 'is-invalid');
+                feedback.textContent = '';
+            }
+        }
+           
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,82 @@
+{% macro employee_modal(current_user) %}
+<div class="modal" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Join Organisation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <div class="container mt-3 mb-3">
+                <div class="card w-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Logged in as:</h5>
+                        <p class="card-text">{{ current_user.first_name }} {{ current_user.last_name }}</p>
+                        <p class="card-text">{{ current_user.email }}</p>
+                        <button type="button" class="btn btn-outline-primary mt-2" onclick="location.href='/login'">Switch Account</button>
+                    </div>
+                </div>
+            </div>
+
+            <form id="joinOrganisationForm" action="{{ url_for('overview.join_organization') }}" method="post">
+                <div class="mb-3 border p-4 rounded">
+                    <h6>Organization Code</h6>
+                    <label for="joiningCode" class="form-label">Ask your admin for the organization code, then enter it here</label>
+                    <input type="text" class="form-control w-50" id="joiningCode" name="joiningCode" oninput="checkJoinCode()" required placeholder="Organization Code">
+                    <small id="joinCode-feedback"></small>
+                </div>
+            </form>
+
+            <div class="container">
+                <h6 class="fw-semibold">To sign in with an organization code</h6>
+                <ul>
+                    <li>Use an organization code with 6 letters or numbers, and no spaces or symbols</li>
+                    <li>Click the "Join" button to become a member of the organization.</li>
+                </ul>
+            </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" id="joinCodeSubmit" form="joinOrganisationForm">Join</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro admin_modal() %}
+<div class="modal fade" id="adminModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Create an Organization</h5>
+                    <p class="small text-muted">An organization represents a structured group where employees collaborate on various projects. Within an organization, you can have multiple workplaces that facilitate specific tasks and roles.</p>
+                </div>
+            </div>
+            
+            <form action="{{ url_for('overview.create_organization') }}" method="POST">
+                <div class="modal-body">
+                    <div class="text-muted small mb-3 fst-italic">Required fields are marked with an asterisk (*).</div>
+                    <div class="mb-4">
+                        <label for="orgName" class="form-label fw-bold">Organization Name *</label>
+                        <input type="text" class="form-control border" id="orgName" name="orgName" placeholder="Enter organization name" oninput="checkOrganisationName()" required>
+                        <small id="orgName-feedback"></small>
+                        <div class="text-muted small mt-2">Lets start with a unique and memorable name for your organization.</div>
+                    </div>               
+                    <div class="mb-4">
+                        <label for="orgDescription" class="form-label fw-bold">Description</label>
+                        <textarea class="form-control border" id="orgDescription" name="orgDescription" rows="4" placeholder="Optional description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success" id="orgSubmitButton">Create Organization</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+

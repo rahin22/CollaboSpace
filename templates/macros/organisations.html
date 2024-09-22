@@ -1,0 +1,10 @@
+{% macro employee_organisation(user_org) %}
+<div class="col-md-2">
+    <div class="card add-card p-2" onclick="">
+        <img src="{{ url_for('static', filename='assets/images/stockBuilding.jpg') }}" class="organisation-card-image">
+        <div class="card-body text-center">
+            <h5>{{ user_org.organization_name }}</h5>
+        </div>
+    </div>
+</div>
+{% endmacro %}
