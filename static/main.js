@@ -19,3 +19,8 @@ function togglePassword(fieldId) {
         icon.classList.replace('ri-eye-line', 'ri-eye-off-line');
     }
 }
+
+function showModal(id) {
+    var Modal = new bootstrap.Modal(id);
+    Modal.show();
+}

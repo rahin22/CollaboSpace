@@ -4,24 +4,7 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-# Users Table
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=True)
-    first_name = db.Column(db.String(50))
-    last_name = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    
-    organizations = db.relationship('Organization', backref='admin', lazy=True)
-    user_workplaces = db.relationship('User_Workplace', backref='user', lazy=True)
-    managed_projects = db.relationship('Project', backref='manager', lazy=True)
-    messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
-    messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
-    uploaded_files = db.relationship('FileAttachment', backref='uploader', lazy=True)
 
 # Roles Table
 class Role(db.Model):
@@ -116,6 +99,8 @@ class Employee_Info(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
+    user = db.relationship('User', back_populates='employees', foreign_keys=[user_id], lazy='joined')
+    manager = db.relationship('User', foreign_keys=[manager_id], backref='managed_employees', lazy='joined')
 
 
 # Salaries Table
@@ -147,3 +132,24 @@ class FileAttachment(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+
+
+# Users Table
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=True)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+
+    
+    organizations = db.relationship('Organization', backref='admin', lazy=True)
+    user_workplaces = db.relationship('User_Workplace', backref='user', lazy=True)
+    managed_projects = db.relationship('Project', backref='manager', lazy=True)
+    messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
+    messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
+    uploaded_files = db.relationship('FileAttachment', backref='uploader', lazy=True)
+    employees = db.relationship('Employee_Info', back_populates='user', foreign_keys=[Employee_Info.user_id], lazy='dynamic')

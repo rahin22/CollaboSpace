@@ -109,6 +109,14 @@ def check_username(username):
     else:
         return jsonify({'available': True})
     
+@authorise.route('/check_email/<email>')
+def check_email(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        return jsonify({'available': False})
+    else:
+        return jsonify({'available': True})
+    
 
 
 @authorise.route('/logout')

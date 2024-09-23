@@ -2,6 +2,7 @@
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
 {% from "macros/organisations.html" import employee_organisation %}
+{% from "macros/organisations.html" import admin_organisation %}
 {% from "macros/entryModals.html" import employee_modal %}
 {% from "macros/entryModals.html" import admin_modal %}
 
@@ -76,7 +77,7 @@
     <div class="container mt-5 admin-container" style="display: none;">
         <div class="row justify-content-center gap-2">
             {% for admins in user_admins %}
-            {{ employee_organisation(admins) }}
+            {{ admin_organisation(admins) }}
             {% endfor %}
 
             <div class="col-md-2">
@@ -91,7 +92,7 @@
         </div>
     </div>
 
-    <div class="container mt-5">
+    <div class="container mt-5" >
         <div class="d-flex justify-content-center mt-5">
             <p>Wrong account? <a href="/logout" class="link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Logout</a></p>
         </div>
@@ -120,11 +121,6 @@
                 document.getElementById('adminPill').classList.add('active');
                 document.getElementById('employeePill').classList.remove('active');
             }
-        }
-
-        function showModal(id) {
-            var Modal = new bootstrap.Modal(id);
-            Modal.show();
         }
 
         function checkOrganisationName(){
@@ -184,6 +180,11 @@
                 joinInput.classList.remove('is-valid', 'is-invalid');
                 feedback.textContent = '';
             }
+        }
+
+
+        function enterOrganizationAdmin(organizationId) {
+            window.location.href = `/admin_dashboard/${organizationId}`;
         }
            
     </script>
