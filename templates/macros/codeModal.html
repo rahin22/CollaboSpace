@@ -1,0 +1,29 @@
+{% macro code_modal(organization) %}
+<div class="modal" id="codeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Join Code</h5>
+                    <p class="small text-muted">
+                        Use this join code to add employees to your organization. Share it securely with those you want to invite.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form id="joinCodeForm" method="POST">
+                    <div class="mb-3">
+                        <label for="joinCode" class="form-label">Join Code</label>
+                        <input type="text" class="form-control" id="joinCode" name="joinCode" readonly value="{{ organization.join_code }}">
+                        <small id="code-feedback"></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyJoinCode()">Copy Code</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

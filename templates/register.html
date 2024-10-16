@@ -265,23 +265,46 @@
 
         // Email validation
         document.getElementById('email').addEventListener('input', function () {
+            const email =  this.value;
             const emailInput = document.getElementById('email');
             const feedback = document.getElementById('email-feedback');
             const emailButton = document.getElementById('emailCont-button');
 
-            if (emailInput.validity.valid) {
-                emailButton.disabled = false;     
-                emailInput.classList.add('is-valid');
-                emailInput.classList.remove('is-invalid');  
-                feedback.textContent = '';
-            } else {
-                emailButton.disabled = true;
-                feedback.textContent = 'It looks like that isn’t a valid email address.';
-                feedback.style.color = 'red';
-                emailInput.classList.add('is-invalid');
-                emailInput.classList.remove('is-valid');
-            }
+            if (email.length > 0) {
+                if (!emailInput.validity.valid) {
+                    emailButton.disabled = true;
+                    feedback.textContent = 'It looks like that isn’t a valid email address.';
+                    feedback.style.color = 'red';
+                    emailInput.classList.add('is-invalid');
+                    emailInput.classList.remove('is-valid');
+                    checkInvalidFields(); 
+                    return;
+                }
 
+                fetch(`/check_email/${email}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            feedback.textContent = 'Email is available';
+                            feedback.style.color = 'green';
+                            emailInput.classList.add('is-valid');
+                            emailInput.classList.remove('is-invalid');
+                            emailButton.disabled = false;
+                            checkInvalidFields(); 
+                        } else {
+                            feedback.textContent = 'Email is already in use';
+                            feedback.style.color = 'red';
+                            emailInput.classList.add('is-invalid');
+                            emailInput.classList.remove('is-valid');
+                            emailButton.disabled = true;
+                            checkInvalidFields(); 
+                        }
+                    });
+            } else {
+                feedback.textContent = '';
+                emailInput.classList.remove('is-valid', 'is-invalid');
+                checkInvalidFields(); 
+            }
         });
 
         // Name validation

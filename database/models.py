@@ -14,8 +14,6 @@ class Role(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    user_workplaces = db.relationship('User_Workplace', backref='role', lazy=True)
-
 # Organizations Table
 class Organization(db.Model):
     __tablename__ = 'organization' 
@@ -35,11 +33,13 @@ class Organization(db.Model):
 class Workplace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     workplace_name = db.Column(db.String(100), nullable=False)
+    workplace_manager = db.Column(db.Integer, db.ForeignKey('user.id'))
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    workplace_image = db.Column(db.String)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
-
+    manager = db.relationship('User', foreign_keys=[workplace_manager], backref='managed_workplaces')
     user_workplaces = db.relationship('User_Workplace', backref='workplace', lazy=True)
     projects = db.relationship('Project', backref='workplace', lazy=True)
 
@@ -49,7 +49,6 @@ class User_Workplace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
     joined_at = db.Column(db.DateTime, default=datetime.now())
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
@@ -95,12 +94,11 @@ class Employee_Info(db.Model):
     salary = db.Column(db.Numeric(10, 2))
     date_of_joining = db.Column(db.DateTime, default=datetime.now())
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
-    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user = db.relationship('User', back_populates='employees', foreign_keys=[user_id], lazy='joined')
-    manager = db.relationship('User', foreign_keys=[manager_id], backref='managed_employees', lazy='joined')
+    
 
 
 # Salaries Table
@@ -142,6 +140,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128), nullable=True)
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
+    pfp = db.Column(db.LargeBinary)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 

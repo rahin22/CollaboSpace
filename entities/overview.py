@@ -34,7 +34,7 @@ def create_organization():
         new_organization = Organization(organization_name=organization_name, admin_id=current_user.id, description=organization_description, join_code=join_code)
         db.session.add(new_organization)
         db.session.commit()
-    return redirect(url_for('overview.entry'))
+    return redirect(url_for('dashboard.admin_dashboard', organization_id=new_organization.id))
 
 
 @overview.route('/check_organization/<organization_name>')

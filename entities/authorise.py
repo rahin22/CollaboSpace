@@ -8,12 +8,41 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
 import os, random
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+import string
 from authlib.integrations.flask_client import OAuth
 
 
 
 
 authorise = Blueprint('authorise', __name__)
+
+
+
+def generate_pfp(first_name):
+    background_color = tuple(random.choices(range(256), k=3))
+    image_size = (200, 200)
+    
+    img = Image.new('RGB', image_size, color=background_color)
+    letter = first_name[0].upper()
+    draw = ImageDraw.Draw(img)   
+    font = ImageFont.truetype("arial.ttf", 100)
+    
+    text_bbox = draw.textbbox((0, 0), letter, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    vertical_offset = 12
+
+    text_position = ((image_size[0] - text_width) // 2, (image_size[1] - text_height) // 2 - vertical_offset)
+
+    
+    draw.text(text_position, letter, fill=(255, 255, 255), font=font)
+    img_io = BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    
+    return img_io
 
 @authorise.route('/register', methods=['GET', 'POST'])
 def register():
@@ -26,7 +55,8 @@ def register():
         password = request.form['password']
 
         pword_hash = pbkdf2_sha256.hash(password)
-        new_user = User(email=email, first_name=first_name, last_name=last_name, username=username, password_hash=pword_hash)
+        pfp = generate_pfp(first_name)
+        new_user = User(email=email, first_name=first_name, last_name=last_name, username=username, password_hash=pword_hash, pfp=pfp.read())
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)
@@ -93,8 +123,11 @@ def google_auth_callback():
         login_user(existing_user)  
     else:
         username = generate_username(first_name, last_name)
+        pfp = generate_pfp(first_name)
+        default_pfp = pfp.read()
+        print(default_pfp)
 
-        new_user = User(email=email, first_name=first_name, last_name=last_name, username=username)
+        new_user = User(email=email, first_name=first_name, last_name=last_name, username=username, pfp=default_pfp)
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user)  

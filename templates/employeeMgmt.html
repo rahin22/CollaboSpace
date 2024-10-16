@@ -1,13 +1,14 @@
 {% from "macros/imports.html" import head_imports %}
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     {{ head_imports() }}
-    <title>Register</title>
+    <title>Employee Management</title>
     <style>
         #sidebar {
             position: fixed;
@@ -104,7 +105,7 @@
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                 id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="" alt="" width="32" height="32" class="rounded-circle me-2">
+                <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
                 <strong>{{ current_user.username }}</strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
@@ -125,12 +126,11 @@
         <table class="table table-striped table-hover rounded">
             <thead>
                 <tr>
-                    <th>User ID</th>
+                    <th>Username</th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Position</th>
                     <th>Salary</th>
-                    <th>Manager</th>
                     <th>Date of Joining</th>
                     <th>Edit</th>
                 </tr>
@@ -138,24 +138,13 @@
             <tbody>
                 {% for employee in employees %}
                 <tr>
-                    <td>{{ employee.user_id }}</td>
+                    <td><img src="data:image/png;base64,{{employee.user.pfp | b64encode}}" alt="" width="27" height="27" class="rounded-circle me-2">{{ employee.user.username }}</td>
                     <td>{{ employee.user.first_name }}</td>
                     <td>{{ employee.user.last_name }}</td>
                     <td>{{ employee.position }}</td>
-                    <td>{{ employee.salary }}</td>
-                    <td>
-                        {% if employee.manager %}
-                        {{ employee.manager.first_name }} {{ employee.manager.last_name }}
-                        {% else %}
-                        No Manager
-                        {% endif %}
-                    </td>
+                    <td>${{ employee.salary }}</td>
                     <td>{{ employee.date_of_joining.strftime('%Y-%m-%d') }}</td>
-                    <td><a href="#" onclick="showModal(editEmployeeModal)" class="edit-btn" data-id="{{ employee.id }}"
-                            data-firstname="{{ employee.user.first_name }}"
-                            data-lastname="{{ employee.user.last_name }}" data-position="{{ employee.position }}"
-                            data-salary="{{ employee.salary }}" data-manager-id="{{ employee.manager_id }}">Edit</a>
-                    </td>
+                    <td><a href="#" onclick="showModal(editEmployeeModal)" class="edit-btn" data-pfp="data:image/png;base64,{{employee.user.pfp | b64encode}}" data-username="{{ employee.user.username }}" data-id="{{ employee.id }}" data-firstname="{{ employee.user.first_name }}" data-lastname="{{ employee.user.last_name }}" data-position="{{ employee.position }}" data-salary="{{ employee.salary }}">Edit</a></td>
                 </tr>
                 {% else %}
                 <tr>
@@ -175,48 +164,46 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editEmployeeForm">
-                        <input type="hidden" id="employeeId" name="employee_id" value="">
+
+                    <div class="d-flex flex-column align-items-center gap-2">
+                        <img src="" id="pfp" alt="" width="100" height="100" class="rounded-circle me-2">
+                        <h3 id="username"></h4>
+                    </div>
+
+                    <form id="editEmployeeForm" action="{{ url_for('dashboard.edit_employee', organization_id=organization.id) }}" method="post">
+                        <input type="hidden" id="employee_id" name="employee_id" value="">
 
                         <div class="mb-3">
                             <label for="firstName" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="firstName" name="first_name">
+                            <input type="text" class="form-control" id="firstName" name="first_name" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label for="lastName" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lastName" name="last_name">
+                            <input type="text" class="form-control" id="lastName" name="last_name" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label for="position" class="form-label">Position</label>
                             <input type="text" class="form-control" id="position" name="position">
-                        </div>
+                        </div>    
 
                         <div class="mb-3">
                             <label for="salary" class="form-label">Salary</label>
                             <input type="number" class="form-control" id="salary" name="salary">
                         </div>
 
-                        <div class="mb-3">
-                            <label for="manager" class="form-label">Manager</label>
-                            <select id="manager" name="manager" class="form-select">
-                                <option value="">No Manager</option>
-                                {% for manager in managers %}
-                                <option value="{{ manager.id }}">{{ manager.first_name }} {{ manager.last_name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveChanges">Save changes</button>
+                    <button type="submit" class="btn btn-primary" id="saveChanges" form="editEmployeeForm">Save changes</button>
                 </div>
             </div>
         </div>
     </div>
+
+    {{ code_modal(organization) }}
 
 
     {{ bootstrap_scripts() }}
@@ -224,26 +211,27 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get all edit buttons
             var editButtons = document.querySelectorAll('.edit-btn');
             
             editButtons.forEach(function(button) {
                 button.addEventListener('click', function() {
-                    // Get data attributes
                     var employeeId = this.getAttribute('data-id');
                     var firstName = this.getAttribute('data-firstname');
                     var lastName = this.getAttribute('data-lastname');
                     var position = this.getAttribute('data-position');
                     var salary = this.getAttribute('data-salary');
-                    var managerId = this.getAttribute('data-manager-id');
-                    
-                    // Set modal fields with employee data
-                    document.getElementById('employeeId').value = employeeId;
+                    var pfp = this.getAttribute('data-pfp');
+                    var username = this.getAttribute('data-username');
+         
+
+                    document.getElementById('employee_id').value = employeeId;
                     document.getElementById('firstName').value = firstName;
                     document.getElementById('lastName').value = lastName;
+                    document.getElementById('pfp').src = pfp;
+                    document.getElementById('username').textContent = username;
                     document.getElementById('position').value = position;
                     document.getElementById('salary').value = salary;
-                    document.getElementById('manager').value = managerId;
+
                 });
             });
         });

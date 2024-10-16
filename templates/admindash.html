@@ -1,13 +1,14 @@
 {% from "macros/imports.html" import head_imports %}
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     {{ head_imports() }}
-    <title>Register</title>
+    <title>Dashboard</title>
     <style>
         #sidebar {
             position: fixed;
@@ -18,10 +19,16 @@
             background-color: #343a40;
             padding: 15px;
         }
+        
+        .card-body h3 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
 
         #content {
             margin-left: 280px;
-            /* Same as the sidebar width */
             padding: 20px;
         }
 
@@ -35,7 +42,6 @@
 
         .workplace-card {
             transition: all 0.3s;
-            border: none;
         }
 
         .workplace-card:hover {
@@ -117,9 +123,8 @@
         </li>
         <hr>
         <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-                id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="" alt="" width="32" height="32" class="rounded-circle me-2">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
                 <strong>{{ current_user.username }}</strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
@@ -134,30 +139,37 @@
         </div>
     </div>
 
-    <!-- Page Content -->
     <div id="content">
         {% if workplaces %}
-        <h5 class="text-center add-workplace-button" onclick="showModal(workplaceModal)" style="cursor: pointer;">Add
+        <h5 class="text-center add-workplace-button" onclick="showModal(workplaceModal), noEmployees()" style="cursor: pointer;">Add
             Workplace <i class="ri-add-fill"></i></h5>
         {% endif %}
 
         <div class="row m-5">
             {% for workplace, employee_count in workplaces %}
-            <div class="col-md-3 mb-4">
-                <div class="card workplace-card shadow" style="cursor: pointer;">
-                    <div class="card-body">
-                        <h3>{{ workplace.workplace_name }}</h3>
-                        <p class="text-muted">Created on: {{ workplace.created_at.strftime('%B %d, %Y') }}</p>
-                        <p class="text-muted">Employees: {{ employee_count }}</p>
+            <div class="col-md-3 mb-4 m-2">
+                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;">
+                    <div style="position: relative;">
+                        <img src="{{ url_for('static', filename=workplace.workplace_image) }}" class="card-img-top" alt="..." style="width: 100%; height: 10rem;">
+                        <div class="card-body text-white" style="position: absolute; bottom: 0; width: 100%;">
+                            <h3>{{ workplace.workplace_name }}</h3>
+                            <p class="text-muted">Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
+                        </div>
                     </div>
-                </div>
+                    <div class="card-body" style="height: 7rem;">
+                        <p class="card-text"></p>
+                    </div>
+                    <div class="card-footer d-flex flex-row gap-3">
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Creation Date" style="text-decoration: none; color: var(--text-color);"><i class="ri-global-line"></i>: {{ workplace.created_at.strftime('%B %d, %Y') }}</a></p>
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Employees" style="text-decoration: none; color: var(--text-color);"><i class="ri-team-line"></i>: {{ employee_count }}</a></p>
+                    </div>
+                </div>                              
             </div>
             {% else %}
         </div>
 
         <div class="container d-flex justify-content-center align-items-center mx-auto flex-column">
-            <i class="ri-add-fill display-1 add-workplace-button" style="cursor: pointer;"
-                onclick="showModal(workplaceModal)"></i>
+            <i class="ri-add-fill display-1 add-workplace-button" style="cursor: pointer;" onclick="showModal(workplaceModal), noEmployees()"></i>
             <p>No workplaces found. To get started with your organisation create some workplaces.</p>
             {% endfor %}
         </div>
@@ -177,57 +189,54 @@
                         </div>
                     </div>
                     <div class="modal-body">
-                        <form id="addWorkplaceForm"
-                            action="{{ url_for('dashboard.add_workplace', organization_id=organization.id) }}"
-                            method="POST">
+                        {% if employees %}
+                        <form id="addWorkplaceForm" action="{{ url_for('dashboard.add_workplace', organization_id=organization.id) }}" method="POST">
                             <div class="mb-3">
                                 <label for="workplaceName" class="form-label">Workplace Name</label>
-                                <input type="text" class="form-control" id="workplaceName" name="workplaceName"
-                                    oninput="checkWorkPlaceName()" required>
+                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="checkWorkPlaceName()" required>
                                 <small id="workplace-feedback"></small>
                             </div>
+                            <div class="mb-3">
+                                <label for="workplaceManager" class="form-label">Workplace Manager</label>
+                                <select class="form-control form-select" id="workplaceManager" name="workplaceManager" required style="cursor: pointer;">  
+                                    {% for employee in employees %}
+                                    <option value="{{ employee.user_id }}">{{ employee.user.first_name }} {{ employee.user.last_name }}</option>
+                                    {% endfor %}
+                                </select>                                
+                            </div>
                         </form>
+
+                        {% else %}
+                        <form id="addWorkplaceForm" action="{{ url_for('dashboard.add_workplace', organization_id=organization.id) }}" method="POST">
+                            <div class="mb-3">
+                                <label for="workplaceName" class="form-label">Workplace Name</label>
+                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="" required>
+                                <small id="workplace-feedback"></small>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex flex-column" id="noEmployeeMessage">
+                                    <span>Workplace Manager</span>
+                                    <span class="text-muted">No employees found. To add employees give them the <a href="#" data-bs-dismiss="modal" onclick="showModal(codeModal)">join code</a></span>
+                                </div>
+                            </div>
+                        </form>
+                        {% endif %}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success" id="workplaceSubmit" form="addWorkplaceForm">Add
-                            Workplace</button>
+                        <button type="submit" class="btn btn-success" id="workplaceSubmit" form="addWorkplaceForm">Add Workplace</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    {{ code_modal(organization) }}
 
 
 
-    <div class="modal" id="codeModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title">Join Code</h5>
-                        <p class="small text-muted">
-                            Use this join code to add employees to your organization. Share it securely with those you want to invite.
-                        </p>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <form id="joinCodeForm" method="POST">
-                        <div class="mb-3">
-                            <label for="joinCode" class="form-label">Join Code</label>
-                            <input type="text" class="form-control" id="joinCode" name="joinCode" readonly value="{{ organization.join_code }}">
-                            <small id="code-feedback"></small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="copyJoinCode()">Copy Code</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
+
     
     {{ bootstrap_scripts() }}
     <script src="{{ url_for('static', filename='main.js') }}"></script>
@@ -265,9 +274,22 @@
 
         function copyJoinCode() {
             const joinCodeInput = document.getElementById('joinCode');
+            const feedback = document.getElementById('code-feedback');
             joinCodeInput.select();
             document.execCommand('copy');
-            alert('Join code copied to clipboard!');
+            feedback.textContent = 'Join code copied to clipboard!';
+            joinCodeInput.classList.add('is-valid');
+            feedback.style.color = 'green';
+        }
+
+        function noEmployees() {
+            submitButton = document.getElementById('workplaceSubmit');
+            noEmployeeMessage = document.getElementById('noEmployeeMessage');
+            if (noEmployeeMessage) {
+                submitButton.disabled = true;
+            } else {
+                submitButton.disabled = false;
+            }
         }
 
     </script>
