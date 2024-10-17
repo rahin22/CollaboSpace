@@ -8,6 +8,7 @@ from database.models import db, User, Role, Organization, Workplace, User_Workpl
 from entities.authorise import authorise as auth_bp
 from entities.overview import overview as over_bp
 from entities.dashboard import dashboard as dash_bp
+from entities.workplace import wrkplace as wrk_bp
 
 
 # Initialize Flask app
@@ -65,6 +66,7 @@ def index():
 app.register_blueprint(auth_bp)
 app.register_blueprint(over_bp)
 app.register_blueprint(dash_bp)
+app.register_blueprint(wrk_bp)
 
 
 # Run the app
