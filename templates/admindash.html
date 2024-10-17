@@ -2,6 +2,7 @@
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
 {% from "macros/codeModal.html" import code_modal %}
+{% from "macros/sidebar.html" import admin_sidebar %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -16,9 +17,17 @@
             left: 0;
             width: 280px;
             height: 100%;
-            background-color: #343a40;
             padding: 15px;
         }
+
+        #smallSidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+
+
         
         .card-body h3 {
             white-space: nowrap;
@@ -59,109 +68,37 @@
         }
 
         .logo-bg{
-            fill: #343a40;
+            fill: var(--bs-body-bg);;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Sidebar -->
-    <div id="sidebar" class="d-flex flex-column flex-shrink-0 text-white">
-        <div class="form-header d-flex flex-row justify-content-center mt-4" onclick="redirHome()">
-            {{ svg_logo() }}
-            <h3 class="text-center fw-bold" style="font-family: Poppins;">Collabospace</h3>
-        </div>
-        <a href="# " class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <svg class="bi me-2" width="40" height="32">
-                <use xlink:href="#bootstrap"></use>
-            </svg>
-            <span class="fs-4">{{ organization.organization_name }}</span>
-        </a>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li>
-                <a href="{{ url_for('dashboard.admin_dashboard', organization_id=organization.id) }}" class="nav-link active">
-                    <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#speedometer2"></use>
-                    </svg>
-                    Dashboard
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('dashboard.employee_management', organization_id=organization.id) }}" class="nav-link text-white">
-                    <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#table"></use>
-                    </svg>
-                    Employee Management
-                </a>
-            </li>
-            <li>
-                <a href="#" class="nav-link text-white">
-                    <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#grid"></use>
-                    </svg>
-                    Products
-                </a>
-            </li>
-            <li>
-                <a href="#" class="nav-link text-white">
-                    <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#people-circle"></use>
-                    </svg>
-                    Customers
-                </a>
-            </li>
-        </ul>
-        <li style="list-style: none;">
-            <a href="#" class="nav-link text-white" onclick="showModal(codeModal)">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#people-circle"></use>
-                </svg>
-                Organisation Code
-            </a>
-        </li>
-        <hr>
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
-                <strong>{{ current_user.username }}</strong>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="#">New project...</a></li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
-                <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
-            </ul>
-        </div>
-    </div>
+    {{ admin_sidebar(organization, current_user, svg_logo) }}
 
     <div id="content">
         {% if workplaces %}
-        <h5 class="text-center add-workplace-button" onclick="showModal(workplaceModal), noEmployees()" style="cursor: pointer;">Add
-            Workplace <i class="ri-add-fill"></i></h5>
+        <h5 class="text-center add-workplace-button" onclick="showModal(workplaceModal), noEmployees()" style="cursor: pointer;">Add Workplace <i class="ri-add-fill"></i></h5>
         {% endif %}
 
         <div class="row m-5">
             {% for workplace, employee_count in workplaces %}
             <div class="col-md-3 mb-4 m-2">
-                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;">
-                    <div style="position: relative;">
+                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;" onclick="window.location.href='{{ url_for('wrkplace.adminWorkplace', workplace_id=workplace.id) }}';">
+                    <div style="position: relative;">   
                         <img src="{{ url_for('static', filename=workplace.workplace_image) }}" class="card-img-top" alt="..." style="width: 100%; height: 10rem;">
                         <div class="card-body text-white" style="position: absolute; bottom: 0; width: 100%;">
                             <h3>{{ workplace.workplace_name }}</h3>
-                            <p class="text-muted">Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
+                            <p>Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
                         </div>
                     </div>
                     <div class="card-body" style="height: 7rem;">
                         <p class="card-text"></p>
                     </div>
                     <div class="card-footer d-flex flex-row gap-3">
-                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Creation Date" style="text-decoration: none; color: var(--text-color);"><i class="ri-global-line"></i>: {{ workplace.created_at.strftime('%B %d, %Y') }}</a></p>
-                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Employees" style="text-decoration: none; color: var(--text-color);"><i class="ri-team-line"></i>: {{ employee_count }}</a></p>
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Creation Date" style="text-decoration: none;" class="link-dark"><i class="ri-global-line"></i>: {{ workplace.created_at.strftime('%B %d, %Y') }}</a></p>
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Employees" style="text-decoration: none;" class="link-dark"><i class="ri-team-line"></i>: {{ employee_count }}</a></p>
                     </div>
                 </div>                              
             </div>

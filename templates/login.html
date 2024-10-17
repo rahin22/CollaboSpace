@@ -2,7 +2,7 @@
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
     {{ head_imports() }}
@@ -16,6 +16,10 @@
             height: 37px;
             width: auto;
             border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--bs-body-bg);;
         }
     </style>
 </head>
