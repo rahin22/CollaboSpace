@@ -10,47 +10,44 @@
     {{ head_imports() }}
     <title>Register</title>
     <style>
-        #sidebar {
+        #smallSidebar {
+            background-color: var(--secondary-color);
+        }
+
+        #workplace-nav {
             position: fixed;
             top: 0;
             left: 0;
             width: 280px;
             height: 100%;
-            background-color: #343a40;
-            transition: all 0.3s;
             padding: 15px;
-        }
-        
-        .card-body h3 {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            transition: width 0.5s ease;
+            margin-left: 4.5rem;
+            margin-top: 52px;
         }
 
-        #content {
-            margin-left: 280px;
-            padding: 20px;
+        #workplace-nav .nav-link{
+            padding: 8px;
+            border-radius: 5px;
         }
 
-        .add-workplace-button {
-            transition: all 0.3s;
+        #workplace-nav .nav-link:hover{
+            background-color: var(--search-bar-color);
+
         }
 
-        .add-workplace-button:hover {
-            color: var(--secondary-color);
+        #smallSidebar a, #smallSidebar ul, #smallSidebar .dropdown{
+            opacity: 1; 
+            transition: opacity 0.5s ease; 
         }
 
-        .workplace-card {
-            transition: all 0.3s;
-        }
-
-        .workplace-card:hover {
-            scale: 1.03;
+        .navbar{
+            margin-left: 4.5rem;
+            background-color: var(--secondary-color);
         }
 
         .logo-fill {
-            fill: var(--secondary-color);
+            fill: #ffffff;
         }
 
         #Layer_1 {
@@ -60,88 +57,145 @@
         }
 
         .logo-bg{
-            fill: var(--bs-body-bg);;
+            fill: var(--secondary-color);;
+        }
+
+        #workplace-search{
+            background-color: #0678d5;
+            border: none;
         }
     </style>
 </head>
 
 <body>
-        <!-- Sidebar -->
-        <div id="sidebar" class="d-flex flex-column flex-shrink-0 text-white">
-            <div class="form-header d-flex flex-row justify-content-center mt-4" onclick="redirHome()">
-                {{ svg_logo() }}
-                <h3 class="text-center fw-bold" style="font-family: Poppins;">Collabospace</h3>
-            </div>
-            <a href="# " class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <svg class="bi me-2" width="40" height="32">
-                    <use xlink:href="#bootstrap"></use>
-                </svg>
-                <span class="fs-4">{{ organization.organization_name }}</span>
+    <!-- Small Sidebar -->
+    <div id="smallSidebar" class="d-flex flex-column flex-shrink-0"  onmouseover="showButton(state='visible')" onmouseout="showButton(state='hidden')">
+        <a href="/" class="d-block p-3 link-dark text-decoration-none" title="">
+            {{ svg_logo() }}
+        </a>
+        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center sidebar-pills">
+          <li class="nav-item">
+            <a href="{{ url_for('dashboard.admin_dashboard', organization_id=organization.id) }}" class="nav-link active py-3" aria-current="page" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                <i class="ri-dashboard-line"></i>
             </a>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li>
-                    <a href="{{ url_for('dashboard.admin_dashboard', organization_id=organization.id) }}" class="nav-link active">
-                        <svg class="bi me-2" width="16" height="16">
-                            <use xlink:href="#speedometer2"></use>
-                        </svg>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('dashboard.employee_management', organization_id=organization.id) }}" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16">
-                            <use xlink:href="#table"></use>
-                        </svg>
-                        Employee Management
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16">
-                            <use xlink:href="#grid"></use>
-                        </svg>
-                        Products
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="nav-link text-white">
-                        <svg class="bi me-2" width="16" height="16">
-                            <use xlink:href="#people-circle"></use>
-                        </svg>
-                        Customers
-                    </a>
-                </li>
-            </ul>
-            <li style="list-style: none;">
-                <a href="#" class="nav-link text-white" onclick="showModal(codeModal)">
-                    <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#people-circle"></use>
-                    </svg>
-                    Organisation Code
-                </a>
-            </li>
-            <hr>
+          </li>
+          <li>
+            <a href="{{ url_for('dashboard.employee_management', organization_id=organization.id) }}" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Employees">
+                <i class="ri-team-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+                <i class="ri-shopping-bag-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
+                <i class="ri-calendar-line"></i>
+            </a>
+          </li>
+        </ul>
+
+        <div class="flex-column mt-auto text-center">
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
-                    <strong>{{ current_user.username }}</strong>
+                <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="theme-dropdown-logo" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i id="theme-logo-icon" class="ri-contrast-2-fill fs-4"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                    <li><a class="dropdown-item" href="#">New project...</a></li>
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                <ul class="dropdown-menu text-small shadow" id="theme-dropdown" aria-labelledby="dropdownUser3">
+                  <li><a class="dropdown-item light-button" href="#"><i class="ri-sun-line"></i> Light</a></li>
+                  <li><a class="dropdown-item auto-button" href="#"><i class="ri-contrast-2-fill"></i> Auto</a></li>
+                  <li><a class="dropdown-item dark-button" href="#"><i class="ri-moon-line"></i> Dark</a></li>
                 </ul>
             </div>
         </div>
 
+        <div class="dropdown border-top">
+          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
+          </a>
+          <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
+            <li><a class="text-decoration-none link-dark fw-bold" href="#" style="margin-left: 15px; cursor:default;">{{ current_user.username }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">New project...</a></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><a class="dropdown-item" href="#" onclick="showModal(codeModal)">Organisation Code</a></li>
+            <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+      <!-- Small Sidebar -->
+
+      <nav class="navbar">
+        <div class="container-fluid d-flex justify-content-center">
+          <form class="d-flex justify-content-center w-100" role="search">
+            <input class="form-control w-50" id="workplace-search" type="search" placeholder="Search {{ workplace.workplace_name }}" aria-label="Search">
+          </form>
+        </div>
+      </nav>
+
+
+
+    <div id="workplace-nav" class="d-flex flex-column flex-shrink-0 link-dark shadow"  style="font-family: 'Poppins';" >
+
+        <div class="dropdown" >
+            <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" >
+                <strong class="fs-4">{{ workplace.workplace_name }}</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser1">
+                <li><a class="dropdown-item" href="#">New project...</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
+                <li>
+                    <hr class="dropdown-divider large-nav-divider">
+                </li>
+                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+            </ul>
+        </div>
+
+        <ul class="list-unstyled fw-normal mt-2">
+            <li><a href="#" id="announcement-link" class="nav-link fs-6"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
+        </ul>
+
+
+        <div id="workplace-collapse">
+           <ul class="list-unstyled mb-0 mt-0 ">
+               <li class="mb-1">
+                   <button class="btn align-items-center rounded collapsed fw-bold" data-bs-toggle="collapse" data-bs-target="#content-collapse" aria-expanded="false" onclick="collapseArrow()">
+                       <i class="ri-arrow-down-s-fill" id="collapse-icon" style="margin-right: 10px;"></i> Projects
+                   </button>
+                   <div class="collapse show" id="content-collapse">
+                       <ul class="list-unstyled fw-normal pb-1 d-flex flex-column gap-1 mt-2" id="workplace-project-tree" style="margin-left: 15px;">
+                           <li><a href="#" class="nav-link link-dark"><i class="ri-team-line" style="margin-right: 10px;"></i> Employees</a></li>
+                           <li><a href="#" class="nav-link link-dark"><i class="ri-shopping-bag-line" style="margin-right: 10px;"></i> Products</a></li>
+                           <li><a href="#" class="nav-link link-dark"><i class="ri-calendar-line" style="margin-right: 10px;"></i> Calendar</a></li>
+                      </ul>
+                  </div>
+               </li>
+           </ul>
+        </div>
+    </div>
+
+
+
     {{ code_modal(organization) }}
     {{ bootstrap_scripts() }}
     <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <script>
+        function collapseArrow() {
+            const collapseButton = document.getElementById('content-collapse');
+            const collapseIcon = document.getElementById('collapse-icon');
+            if (collapseButton.classList.contains('show')) {
+                collapseIcon.classList.remove('ri-arrow-right-s-fill');
+                collapseIcon.classList.add('ri-arrow-down-s-fill');
+            } else {
+                collapseIcon.classList.remove('ri-arrow-down-s-fill');
+                collapseIcon.classList.add('ri-arrow-right-s-fill');
+            }
+        }
+    </script>
 </body>
 
 </html>
