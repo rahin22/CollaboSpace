@@ -10,25 +10,7 @@
 <head>
     {{ head_imports() }}
     <title>Dashboard</title>
-    <style>
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            padding: 15px;
-        }
-
-        #smallSidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-        }
-
-
-        
+    <style>        
         .card-body h3 {
             white-space: nowrap;
             overflow: hidden;
@@ -112,7 +94,7 @@
         </div>
 
         <!-- Add Workplace Modal -->
-        <div class="modal" id="workplaceModal" tabindex="-1">
+        <div class="modal fade" id="workplaceModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">

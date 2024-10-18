@@ -11,22 +11,6 @@
     {{ head_imports() }}
     <title>Employee Management</title>
     <style>
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            padding: 15px;
-        }
-
-        #smallSidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-        }
-
         #content {
             margin-left: 280px;
             padding: 20px;
@@ -167,13 +151,6 @@
                 });
             });
         });
-
-        window.onload = function() {
-            document.getElementById('dashboard-pill').classList.remove('active');
-            document.getElementById('dashboard-pill').classList.add('link-dark');
-            document.getElementById('employee-pill').classList.add('active');
-            document.getElementById('employee-pill').classList.add('text-white');
-        }
         
     </script>
     

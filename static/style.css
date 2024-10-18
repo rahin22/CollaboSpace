@@ -19,7 +19,7 @@
     --dark-color: #000;
     --bg-color: #ffff;
     --secondary-color: #1093ff;
-    --search-bar-color: #f3f3f3;
+    --search-bar-color: #e9e7e7;
     --nav-hover-color: #003c6d;
 }
 
@@ -188,8 +188,50 @@
 
 /* Login & Register Page Styles */
 
-.form-header {
-    cursor: pointer;
-}
 
 /* Login & Register Page Styles */
+
+/* Dashboard Styles */
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    padding: 15px;
+    transition: width 0.5s ease;
+}
+
+#content {
+    transition: margin 0.5s ease;
+}
+
+#sidebar a, #sidebar ul, #sidebar .dropdown, .form-header{
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.large-nav-divider {
+    transition: opacity 0.3s ease;
+}
+
+#smallSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 4.5rem; 
+    transition: width 0.3s ease; 
+}
+
+#smallSidebar a, #smallSidebar ul, #smallSidebar .dropdown{
+    opacity: 0; 
+    transition: opacity 0.5s ease; 
+}
+
+
+
+
+
+/* Dashboard Styles */
