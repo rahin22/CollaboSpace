@@ -107,7 +107,7 @@ yy
                         <form id="addWorkplaceForm" action="{{ url_for('dashboard.add_workplace', organization_id=organization.id) }}" method="POST">
                             <div class="mb-3">
                                 <label for="workplaceName" class="form-label">Workplace Name</label>
-                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="checkWorkPlaceName()" required>
+                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="checkWorkPlaceName(), limitWords(this, 40)" required>
                                 <small id="workplace-feedback"></small>
                             </div>
                             <div class="mb-3">

@@ -58,12 +58,14 @@ function switchLinkTheme(theme) {
             link.classList.add('link-light');
         });
         document.documentElement.style.setProperty('--search-bar-color', '#2d3338');
+        document.documentElement.style.setProperty('--bs-change-color', '#F8F9FA');
     } else {
         lightLinks.forEach(link => {
             link.classList.remove('link-light');
             link.classList.add('link-dark');
         });
         document.documentElement.style.setProperty('--search-bar-color', '#e9e7e7');
+        document.documentElement.style.setProperty('--bs-change-color', '#212529');
     }
 }
 
@@ -299,3 +301,26 @@ function redirLogin() {
     window.location.href = "/login";
 }
 
+
+function countWords(inputField, limit) {
+    const words = inputField.value;
+    const wordCountField = inputField.nextElementSibling; 
+
+    wordCountField.textContent = `${words.length}/${limit} words`;
+
+    if (words.length > limit) {
+        const truncatedWords = words.slice(0, limit);
+        inputField.value = truncatedWords;
+        wordCountField.textContent = `${limit}/${limit} words`;
+    } 
+}
+
+
+function limitWords(inputField, limit) {
+    const words = inputField.value;
+
+    if (words.length > limit) {
+        const truncatedWords = words.slice(0, limit);
+        inputField.value = truncatedWords;
+    } 
+}

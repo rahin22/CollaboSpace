@@ -59,15 +59,16 @@
             <form action="{{ url_for('overview.create_organization') }}" method="POST">
                 <div class="modal-body">
                     <div class="text-muted small mb-3 fst-italic">Required fields are marked with an asterisk (*).</div>
-                    <div class="mb-4">
+                    <div class="mb-4 d-flex flex-column">
                         <label for="orgName" class="form-label fw-bold">Organization Name *</label>
-                        <input type="text" class="form-control border" id="orgName" name="orgName" placeholder="Enter organization name" oninput="checkOrganisationName()" required>
+                        <input type="text" class="form-control border" id="orgName" name="orgName" placeholder="Enter organization name" oninput="checkOrganisationName(), countWords(this, 50)" required>
+                        <small class="text-muted">0/50 words</small>
                         <small id="orgName-feedback"></small>
-                        <div class="text-muted small mt-2">Lets start with a unique and memorable name for your organization.</div>
                     </div>               
                     <div class="mb-4">
                         <label for="orgDescription" class="form-label fw-bold">Description</label>
-                        <textarea class="form-control border" id="orgDescription" name="orgDescription" rows="4" placeholder="Optional description"></textarea>
+                        <textarea class="form-control border" id="orgDescription" name="orgDescription" rows="4" placeholder="Optional description" oninput="countWords(this, 200)"></textarea>
+                        <small class="text-muted">0/200 words</small>
                     </div>
                 </div>
                 <div class="modal-footer">

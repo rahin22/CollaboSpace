@@ -2,13 +2,16 @@
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
 {% from "macros/codeModal.html" import code_modal %}
+{% from "macros/workplaceModals.html" import createProject_modal %}
+{% from "macros/workplaceModals.html" import addEmployee_modal %}
+{% from "macros/sidebar.html" import workplace_sidebar %}
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     {{ head_imports() }}
-    <title>Register</title>
+    <title>{{ workplace.workplace_name }}</title>
     <style>
         #smallSidebar {
             background-color: var(--secondary-color);
@@ -20,10 +23,18 @@
             left: 0;
             width: 280px;
             height: 100%;
-            padding: 15px;
+            padding: 12px;
             transition: width 0.5s ease;
             margin-left: 4.5rem;
             margin-top: 52px;
+            overflow: hidden;
+        }
+
+        .workplace-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; 
         }
 
         #workplace-nav .nav-link{
@@ -41,9 +52,17 @@
             transition: opacity 0.5s ease; 
         }
 
-        .navbar{
+        #search-navbar{
             margin-left: 4.5rem;
             background-color: var(--secondary-color);
+        }
+
+        #workplace-infoBar{
+            position: fixed;
+            width: 100%;
+            margin-left: 352px;
+            background-color: var(--bs-body-bg);
+            box-shadow: 0 0.5rem 1rem -0.5rem rgba(0, 0, 0, 0.15);
         }
 
         .logo-fill {
@@ -64,94 +83,56 @@
             background-color: #0678d5;
             border: none;
         }
+
+        #workplace-collapse::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-track {
+            background: none;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-thumb {
+            background: none;
+            transition: all 0.3s;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-thumb:hover {
+            cursor: pointer;
+        }
+
+        #workplace-collapse:hover::-webkit-scrollbar-thumb {
+            background: var(--search-bar-color); 
+            border-radius: 10px; 
+        }
+
+        .workplace-content {
+            margin-left: 352px;
+            padding: 0 20px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
     </style>
 </head>
 
 <body>
-    <!-- Small Sidebar -->
-    <div id="smallSidebar" class="d-flex flex-column flex-shrink-0"  onmouseover="showButton(state='visible')" onmouseout="showButton(state='hidden')">
-        <a href="/" class="d-block p-3 link-dark text-decoration-none" title="">
-            {{ svg_logo() }}
-        </a>
-        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center sidebar-pills">
-          <li class="nav-item">
-            <a href="{{ url_for('dashboard.admin_dashboard', organization_id=organization.id) }}" class="nav-link active py-3" aria-current="page" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
-                <i class="ri-dashboard-line"></i>
-            </a>
-          </li>
-          <li>
-            <a href="{{ url_for('dashboard.employee_management', organization_id=organization.id) }}" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Employees">
-                <i class="ri-team-line"></i>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
-                <i class="ri-shopping-bag-line"></i>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
-                <i class="ri-calendar-line"></i>
-            </a>
-          </li>
-        </ul>
-
-        <div class="flex-column mt-auto text-center">
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="theme-dropdown-logo" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i id="theme-logo-icon" class="ri-contrast-2-fill fs-4"></i>
-                </a>
-                <ul class="dropdown-menu text-small shadow" id="theme-dropdown" aria-labelledby="dropdownUser3">
-                  <li><a class="dropdown-item light-button" href="#"><i class="ri-sun-line"></i> Light</a></li>
-                  <li><a class="dropdown-item auto-button" href="#"><i class="ri-contrast-2-fill"></i> Auto</a></li>
-                  <li><a class="dropdown-item dark-button" href="#"><i class="ri-moon-line"></i> Dark</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="dropdown border-top">
-          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
-          </a>
-          <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
-            <li><a class="text-decoration-none link-dark fw-bold" href="#" style="margin-left: 15px; cursor:default;">{{ current_user.username }}</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#" onclick="showModal(codeModal)">Organisation Code</a></li>
-            <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="/logout">Sign out</a></li>
-          </ul>
-        </div>
-      </div>
-      <!-- Small Sidebar -->
-
-      <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-center">
-          <form class="d-flex justify-content-center w-100" role="search">
-            <input class="form-control w-50" id="workplace-search" type="search" placeholder="Search {{ workplace.workplace_name }}" aria-label="Search">
-          </form>
-        </div>
-      </nav>
-
-
+    {{ workplace_sidebar(organization, current_user, svg_logo, workplace) }}
 
     <div id="workplace-nav" class="d-flex flex-column flex-shrink-0 link-dark shadow"  style="font-family: 'Poppins';" >
 
-        <div class="dropdown" >
+        <div class="dropdown d-flex flex-row justify-content-lg-between" id="">
             <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" >
-                <strong class="fs-4">{{ workplace.workplace_name }}</strong>
+                <strong class="fs-4 workplace-name">{{ workplace.workplace_name }}</strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="#">New project...</a></li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
-                <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
-                <li>
-                    <hr class="dropdown-divider large-nav-divider">
-                </li>
-                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                <li><a class="dropdown-item" href="#" onclick="showModal(createProjectModal)">New project...</a></li>
+                <li><a class="dropdown-item" href="#">Workplace Settings</a></li>
             </ul>
+
+            <a href="#" class="nav-link link-dark" title="" onclick="showModal(addEmployeeModal)" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Add Employees">
+                <i class="ri-user-add-line fs-5"></i>
+            </a>
         </div>
 
         <ul class="list-unstyled fw-normal mt-2">
@@ -159,17 +140,29 @@
         </ul>
 
 
-        <div id="workplace-collapse">
+        <div id="workplace-collapse" class="overflow-auto mb-4">
            <ul class="list-unstyled mb-0 mt-0 ">
                <li class="mb-1">
-                   <button class="btn align-items-center rounded collapsed fw-bold" data-bs-toggle="collapse" data-bs-target="#content-collapse" aria-expanded="false" onclick="collapseArrow()">
-                       <i class="ri-arrow-down-s-fill" id="collapse-icon" style="margin-right: 10px;"></i> Projects
-                   </button>
+                   <div class="d-flex flex-row justify-content-lg-between">
+                       <button class="btn align-items-center rounded collapsed fw-bold" data-bs-toggle="collapse" data-bs-target="#content-collapse" aria-expanded="false" onclick="collapseArrow()">
+                          <i class="ri-arrow-down-s-fill" id="collapse-icon" style="margin-right: 10px;"></i> Projects
+                       </button>
+                       <a href="#" class="nav-link link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Filter Projects">
+                          <i class="ri-filter-2-line"></i>
+                       </a>
+                   </div>
+
                    <div class="collapse show" id="content-collapse">
-                       <ul class="list-unstyled fw-normal pb-1 d-flex flex-column gap-1 mt-2" id="workplace-project-tree" style="margin-left: 15px;">
-                           <li><a href="#" class="nav-link link-dark"><i class="ri-team-line" style="margin-right: 10px;"></i> Employees</a></li>
-                           <li><a href="#" class="nav-link link-dark"><i class="ri-shopping-bag-line" style="margin-right: 10px;"></i> Products</a></li>
-                           <li><a href="#" class="nav-link link-dark"><i class="ri-calendar-line" style="margin-right: 10px;"></i> Calendar</a></li>
+                       <ul class="list-unstyled fw-normal pb-1 d-sm-flex flex-sm-column gap-1 mt-2" id="workplace-project-tree" style="margin-left: 15px;">
+                        {% if projects %}
+                        {% for project in projects %}
+                        <li class="project-list-item" data-project-id="{{ project.id }}"><a href="#" class="nav-link link-dark"><i class="project-icon" style="margin-right: 10px;"></i> {{ project.project_name }}</a></li>
+                        {% endfor %}
+                        {% else %}
+                        <li class="link-dark">
+                             No Projects Yet<br><a href="#" onclick="showModal(createProjectModal)" class="link-primary">Click here</a> to get started
+                        </li>
+                        {% endif %}
                       </ul>
                   </div>
                </li>
@@ -177,17 +170,127 @@
         </div>
     </div>
 
+    
+    <nav class="navbar" id="workplace-infoBar" >
+        <div class="container-fluid d-flex justify-content-start">
+            <ul class="nav nav-underline">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="#">Messages</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Files</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
 
+    <div class="workplace-content mt-5 d-flex">
+
+        <form id="messageForm" action="" method="POST">
+            <div class="message-container rounded-4 border">
+                <div class="mb-3">
+                    <div id="toolbar">
+                        <span class="ql-formats">
+                            <button class="ql-bold" data-bs-toggle="tooltip"   data-bs-html="true" data-bs-title="<b>Bold</b> <br> Ctrl + B"></button>
+                            <button class="ql-italic" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Italic</b> <br> Ctrl + I"></button>
+                            <button class="ql-strike" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Strikethrough</b>"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Link</b>"></button>
+                            <button class="ql-blockquote" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Block Quote</b>"></button>
+                            <button class="ql-code-block" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Code Block</b>"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Ordered List</b>"></button>
+                            <button class="ql-list" value="bullet" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Bullet List<b>"></button>
+                        </span>
+
+                    </div>
+                    <div id="editor" class="overflow-auto" style="max-height: 40vh;"></div>
+                    <textarea id="hiddenTextarea" name="message" style="display: none;"></textarea>
+                </div>
+                <div class="d-flex justify-content-between p-2" style="height: fit-content;">
+                    
+                    <div class="dropdown">
+                        <button class="btn attachment-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="ri-add-circle-line fs-4"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li><a class="dropdown-item" href="#">Action</a></li>
+                          <li><a class="dropdown-item" href="#">Another action</a></li>
+                          <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-sm"><i class="ri-send-plane-2-line"></i></button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    
+
+
+
+
+    
+    {{ addEmployee_modal(workplace, non_employees) }}
+    {{ createProject_modal(workplace) }}
     {{ code_modal(organization) }}
     {{ bootstrap_scripts() }}
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 
     <script>
+
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                switchLinkTheme(savedTheme);
+                setActiveButton(savedTheme);
+            } else {
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (systemPrefersDark) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    switchLinkTheme('dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    switchLinkTheme('light');
+                }
+                setActiveButton('auto');
+            }
+            
+            document.querySelectorAll('.project-list-item').forEach(item => {
+                const projectId = item.getAttribute('data-project-id');
+                checkProjectStatus(projectId, item);
+            });
+
+            
+        };
+
+        $(document).ready(function() {
+            $('#employeeSelect').select2({
+                dropdownParent: $('#addEmployeeModal'),
+                templateResult: function(state) {
+                    if (!state.id) {
+                        return state.text;
+                    }
+                    var $state = $(
+                        '<span><img src="data:image/png;base64,' + $(state.element).data('img') + '" class="rounded-circle me-2" width="20" height="20"/>' + state.text + '</span>'
+                    );
+                    return $state;
+                }
+            });
+        });
+        
+
         function collapseArrow() {
             const collapseButton = document.getElementById('content-collapse');
             const collapseIcon = document.getElementById('collapse-icon');
-            if (collapseButton.classList.contains('show')) {
+
+            if (collapseIcon.classList.contains('ri-arrow-right-s-fill')) {
                 collapseIcon.classList.remove('ri-arrow-right-s-fill');
                 collapseIcon.classList.add('ri-arrow-down-s-fill');
             } else {
@@ -195,6 +298,78 @@
                 collapseIcon.classList.add('ri-arrow-right-s-fill');
             }
         }
+
+        function checkProjectName() {
+            const projectValue = document.getElementById('projectName').value;
+            const projectInput = document.getElementById('projectName');
+            const feedback = document.getElementById('project-feedback');
+            const submitButton = document.getElementById('projectSubmit');
+            const workId = "{{ workplace.id }}";
+
+            if (projectValue.length > 0) {
+                fetch(`/check_project/${projectValue}/${workId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        feedback.textContent = data.message;
+                        console.log(projectValue)
+                        if (projectValue.toLowerCase() === 'announcements') {
+                            feedback.textContent = 'Project name cannot be "announcements"';
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        } else if (data.available) {
+                            feedback.style.color = 'green';
+                            projectInput.classList.add('is-valid');
+                            projectInput.classList.remove('is-invalid');
+                            submitButton.disabled = false;
+                        } else {
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        }
+                        
+                    });
+            } else {
+                projectInput.classList.remove('is-valid', 'is-invalid');
+                feedback.textContent = '';
+            }
+        }
+
+        
+        function checkProjectStatus(project_id, item) {
+            const project_icon = item.querySelector('.project-icon');
+        
+            fetch(`/check_status/${project_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        project_icon.className = data.icon;
+                        project_icon.style.color = data.color;
+                        project_icon.setAttribute('data-bs-title', `Status: ${data.status}`);
+                        new bootstrap.Tooltip(project_icon); 
+                    }
+                });
+        }
+        
+
+        const quill = new Quill('#editor', {
+            modules: {
+              toolbar: '#toolbar'
+            },
+            placeholder: 'Message',
+            theme: 'snow',
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', function() {
+            const messageContent = quill.root.innerHTML;
+            document.getElementById('hiddenTextarea').value = messageContent;
+        });
+        
+        
+
+        
     </script>
 </body>
 
