@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
@@ -54,8 +54,19 @@ def add_workplace(organization_id):
         add_manager = User_Workplace(user_id=workplace_manager, workplace_id=new_workplace.id)
         db.session.add(add_manager)
         db.session.commit()
+
+        announcements_conversation = Conversation(title='Announcements', workplace_id=new_workplace.id, conversation_type='announcement')
+        db.session.add(announcements_conversation)
+        db.session.commit()  
+
+        workplace_employees = User_Workplace.query.filter_by(workplace_id=new_workplace.id).all()
+        for employee in workplace_employees:
+            participant = ConversationParticipants(conversation_id=announcements_conversation.id, user_id=employee.user_id)
+            db.session.add(participant)
         
-        return redirect(url_for('dashboard.admin_dashboard', organization_id=organization_id))
+        db.session.commit()
+
+        return redirect(url_for('wrkplace.adminWorkplace', workplace_id=new_workplace.id))
 
 
 @dashboard.route('/check_workplace/<work_name>/<org_id>')

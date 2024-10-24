@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room
 import os, base64
 from authlib.integrations.flask_client import OAuth
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 from entities.authorise import authorise as auth_bp
 from entities.overview import overview as over_bp
 from entities.dashboard import dashboard as dash_bp
 from entities.workplace import wrkplace as wrk_bp
+from entities.messages import messages as msg_bp
 
 
 # Initialize Flask app
@@ -61,12 +62,43 @@ def index():
     return render_template('index.html')
 
 
+@socketio.on('send_message')
+def handle_send_message(data):
+    conversation_id = data['conversation_id']
+    content = data['content']
+    
+    message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id)
+    db.session.add(message)
+    db.session.commit()
+    
+    socketio.emit('new_message', message.to_dict())
+
+
+
+@socketio.on('join')
+def on_join(data):
+    room = data['room']  
+    join_room(room)
+    print(f'User has joined room: {room}')
+
+
+
+@socketio.on('new_message')
+def handle_new_message(message):
+    room = message['conversation_id']  
+    socketio.emit('new_message', message, room=room)
+
+
+
+
+
 
 # Register blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(over_bp)
 app.register_blueprint(dash_bp)
 app.register_blueprint(wrk_bp)
+app.register_blueprint(msg_bp)
 
 
 # Run the app

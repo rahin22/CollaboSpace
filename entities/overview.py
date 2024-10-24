@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 import os, random
 from authlib.integrations.flask_client import OAuth
 

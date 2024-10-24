@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
+import base64
 
 db = SQLAlchemy()
 
@@ -120,7 +121,7 @@ class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=True)
     workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True, unique=True)
     conversation_type = db.Column(db.String(50), nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -159,6 +160,18 @@ class Message(db.Model):
     __table_args__ = (
         db.Index('idx_conversation_id', 'conversation_id'),
     )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'conversation_id': self.conversation_id,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'user': {
+                'username': self.sender.username,
+                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')  # Convert bytes to Base64 string
+            }
+        }
 
 
 # File Attachments Table

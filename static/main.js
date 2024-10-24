@@ -324,3 +324,25 @@ function limitWords(inputField, limit) {
         inputField.value = truncatedWords;
     } 
 }
+
+
+function formatTimestamp(timestamp, format) {
+    return moment(timestamp).tz(moment.tz.guess()).format(format);; 
+}
+
+
+function formatMessageTimestamp(timestamp) {
+    const messageDate = moment(timestamp).tz(moment.tz.guess());
+    const today = moment().tz(moment.tz.guess()).startOf('day');
+    const yesterday = moment().tz(moment.tz.guess()).subtract(1, 'days').startOf('day');
+
+    if (messageDate.isSame(today, 'day')) {
+        return `Today at ${messageDate.format('hh:mm A')}`; 
+    } else if (messageDate.isSame(yesterday, 'day')) {
+        return `Yesterday at ${messageDate.format('hh:mm A')}`; 
+    } else {
+        return messageDate.format('DD/MM/YYYY hh:mm A'); 
+    }
+}
+
+

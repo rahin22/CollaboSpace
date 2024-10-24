@@ -108,9 +108,33 @@
 
         .workplace-content {
             margin-left: 352px;
+            margin-top: 100px;
             padding: 0 20px;
-            position: relative;
-            box-sizing: border-box;
+            margin-bottom: 200px;
+        }
+
+        .tabActive {
+            background-color: var(--search-bar-color);
+        }
+
+        .attachment-button {
+            padding: 0px;
+        }
+
+        .channel-start-message {
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            padding: 5px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .message:hover {
+            background-color: var(--search-bar-color);
         }
         
     </style>
@@ -136,7 +160,7 @@
         </div>
 
         <ul class="list-unstyled fw-normal mt-2">
-            <li><a href="#" id="announcement-link" class="nav-link fs-6"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
+            <li><a href="#" id="announcement-link" class="nav-link channel-tab tabActive fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="announcement"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
         </ul>
 
 
@@ -156,7 +180,7 @@
                        <ul class="list-unstyled fw-normal pb-1 d-sm-flex flex-sm-column gap-1 mt-2" id="workplace-project-tree" style="margin-left: 15px;">
                         {% if projects %}
                         {% for project in projects %}
-                        <li class="project-list-item" data-project-id="{{ project.id }}"><a href="#" class="nav-link link-dark"><i class="project-icon" style="margin-right: 10px;"></i> {{ project.project_name }}</a></li>
+                        <li class="project-list-item" data-project-id="{{ project.id }}" ><a href="#" class="nav-link channel-tab link-dark" data-channel-id="{{ project.id }}" data-conversation-type="project"><i class="project-icon" style="margin-right: 10px;"></i> {{ project.project_name }}</a></li>
                         {% endfor %}
                         {% else %}
                         <li class="link-dark">
@@ -172,20 +196,23 @@
 
     
     <nav class="navbar" id="workplace-infoBar" >
-        <div class="container-fluid d-flex justify-content-start">
+        <div class="d-flex flex-column" style="margin-left: 20px;">
+            <p class="fw-bold" id="channel-title" style="font-size: 18px; margin-bottom: 0px;"></p>
             <ul class="nav nav-underline">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="#">Messages</a>
+                  <a class="nav-link active link-dark" aria-current="page" href="#"><i class="ri-chat-3-fill"></i> Messages</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Files</a>
+                  <a class="nav-link link-dark" href="#"><i class="ri-file-3-line "></i> Files</a>
                 </li>
             </ul>
         </div>
     </nav>
 
 
-    <div class="workplace-content mt-5 d-flex">
+    <div class="workplace-content">
+
+        <div class="d-flex flex-column " id="channel-content"></div>
 
         <form id="messageForm" action="" method="POST">
             <div class="message-container rounded-4 border">
@@ -266,9 +293,161 @@
                 const projectId = item.getAttribute('data-project-id');
                 checkProjectStatus(projectId, item);
             });
+            
+          
+            document.getElementById('channel-title').innerHTML = document.querySelector('.tabActive').innerHTML;
+
 
             
         };
+
+        const quill = new Quill('#editor', {
+            modules: {
+              toolbar: '#toolbar'
+            },
+            placeholder: 'Message',
+            theme: 'snow',
+        });
+
+        let currentConversationId;
+
+ 
+        document.querySelectorAll('.channel-tab').forEach(tab => {
+            const channelTitle = document.getElementById('channel-title');
+            tab.addEventListener('click', async (e) => {
+                document.querySelector('.tabActive').classList.remove('tabActive');
+                tab.classList.add('tabActive');
+                channelTitle.innerHTML = tab.innerHTML;
+        
+                const conversationType = tab.getAttribute('data-conversation-type');
+                const channelId = tab.getAttribute('data-channel-id');
+                const response = await fetch(`/get_messages_for_channel/${conversationType}/${channelId}`);
+                console.log(conversationType, channelId);
+                if (response.ok) {
+                    const data = await response.json();
+                    const messages = data.messages;
+                    currentConversationId = data.conversation_id;
+                    socket.emit('join', { room: currentConversationId });
+      
+        
+                    // Render messages
+                    renderMessages(messages);
+        
+                    // Scroll to the bottom of the messages
+                    window.scrollTo(0, document.body.scrollHeight);
+        
+                } else {
+                    console.error('Error fetching messages:', response.statusText);
+                }
+            });
+        });
+        
+
+        const socket = io(); 
+        document.getElementById('messageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageContent = document.getElementById('editor').textContent; 
+            const messageData = {
+                content: messageContent,
+                conversation_id: currentConversationId, 
+            };
+
+            socket.emit('send_message', messageData); 
+            quill.deleteText(0, quill.getLength())
+        });
+
+        socket.on('new_message', function(message) {
+            if (message.conversation_id === currentConversationId) {
+                appendMessage(message);
+            }
+        });
+        
+
+        let isUserAtBottom = true; // Flag to check if the user is at the bottom
+
+        // Function to check if the user is at the bottom of the page
+        function checkScrollPosition() {
+            const scrollPosition = document.body.scrollHeight - window.innerHeight - window.scrollY;
+            const threshold = 100; // Threshold for considering "at bottom"
+        
+            isUserAtBottom = scrollPosition < threshold;
+        }
+        
+        // Add event listener to track scrolling
+        window.addEventListener('scroll', checkScrollPosition);
+        
+
+        function renderMessages(messages) {
+            const channelContent = document.getElementById('channel-content');
+            channelContent.innerHTML = '';
+
+            const startMessage = document.createElement('div');
+            const channelName = document.querySelector('.tabActive').innerHTML;
+            startMessage.classList.add('channel-start-message');
+            startMessage.innerHTML = `<h3>Welcome to the ${channelName} messages!</h3>`;
+            channelContent.appendChild(startMessage);
+        
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                const formattedTimestamp = formatMessageTimestamp(message.timestamp);
+        
+                messageDiv.innerHTML = `
+                <img src="data:image/png;base64,${message.user.pfp}" alt="" width="32" height="32" class="rounded-circle me-3 mt-2">
+                    <div class="message-text d-flex flex-column">
+                        <div class="message-header d-flex flex-row gap-2">
+                            <div class="message-author">
+                               <span class="message-author-name fw-bold">${message.user.username}</span>
+                            </div>
+                            <div class="message-timestamp">
+                               <span class=' text-muted' style="font-size: 0.75em;">${formattedTimestamp}</span>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <p>${message.content}</p>
+                        </div>
+                    </div>
+                `;
+
+                channelContent.appendChild(messageDiv);
+            });
+        
+            console.log(messages);
+        }
+
+
+        function appendMessage(message) {
+            const channelContent = document.getElementById('channel-content');
+            const newMessage = document.createElement('div');
+            const formattedTimestamp = formatMessageTimestamp(message.timestamp);
+            newMessage.innerHTML = `
+                <div class="message">
+                    <img src="data:image/png;base64,${message.user.pfp}" alt="" width="32" height="32" class="rounded-circle me-3 mt-2">
+                    <div class="message-text d-flex flex-column">
+                        <div class="message-header d-flex flex-row gap-2">
+                            <div class="message-author">
+                               <span class="message-author-name fw-bold">${message.user.username}</span>
+                            </div>
+                            <div class="message-timestamp">
+                               <span class=' text-muted' style="font-size: 0.75em;">${formattedTimestamp}</span>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            <p>${message.content}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            channelContent.appendChild(newMessage);
+
+            if (isUserAtBottom) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+        
+        
+        
+        
 
         $(document).ready(function() {
             $('#employeeSelect').select2({
@@ -354,19 +533,7 @@
         }
         
 
-        const quill = new Quill('#editor', {
-            modules: {
-              toolbar: '#toolbar'
-            },
-            placeholder: 'Message',
-            theme: 'snow',
-        });
 
-        document.getElementById('messageForm').addEventListener('submit', function() {
-            const messageContent = quill.root.innerHTML;
-            document.getElementById('hiddenTextarea').value = messageContent;
-        });
-        
         
 
         

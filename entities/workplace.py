@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
@@ -74,6 +74,17 @@ def create_project(workplace_id):
         db.session.add(new_project)
         db.session.commit()
 
+        project_conversation = Conversation(title=new_project.project_name, project_id=new_project.id, workplace_id=workplace_id, conversation_type='project')
+        db.session.add(project_conversation)
+        db.session.commit()
+
+        workplace_employees = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
+        for employee in workplace_employees:
+            participant = ConversationParticipants(conversation_id=project_conversation.id, user_id=employee.user_id,)
+            db.session.add(participant)
+            
+        db.session.commit()
+
         return redirect(url_for('wrkplace.adminWorkplace', workplace_id=workplace_id))
     
 
@@ -89,6 +100,41 @@ def add_employees(workplace_id):
             add_employee = User_Workplace(user_id=employee_id, workplace_id=workplace_id)
             db.session.add(add_employee)
 
+            announcements_conversation = Conversation.query.filter_by(workplace_id=workplace_id, conversation_type='announcement').first()
+            if announcements_conversation:
+                participant = ConversationParticipants(conversation_id=announcements_conversation.id,user_id=employee_id,)
+                db.session.add(participant)
+
+            projects = Project.query.filter_by(workplace_id=workplace_id).all()
+            for project in projects:
+                project_conversation = Conversation.query.filter_by(project_id=project.id).first()
+                if project_conversation: 
+                    participant = ConversationParticipants(conversation_id=project_conversation.id,user_id=employee_id)
+                    db.session.add(participant)
+
         db.session.commit()
 
+
         return redirect(url_for('wrkplace.adminWorkplace', workplace_id=workplace_id))
+    
+
+@wrkplace.route('/get_messages_for_channel/<conversation_type>/<int:channel_id>', methods=['GET'])
+def get_messages_for_channel(conversation_type, channel_id):
+    if conversation_type == 'announcement':
+        conversation = Conversation.query.filter_by(workplace_id=channel_id, conversation_type='announcement').first()
+        print(conversation)
+    elif conversation_type == 'project':
+        conversation = Conversation.query.filter_by(project_id=channel_id, conversation_type='project').first()
+        print(conversation)
+    else:
+        return jsonify({'error': 'Invalid conversation type'}), 400
+
+    if conversation is None:
+        return jsonify({'error': 'Conversation not found'}), 404
+
+    messages = Message.query.filter_by(conversation_id=conversation.id).all()
+
+    return jsonify({
+        'conversation_id': conversation.id,
+        'messages': [message.to_dict() for message in messages]
+    })
