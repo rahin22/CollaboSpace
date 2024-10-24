@@ -19,8 +19,9 @@
     --dark-color: #000;
     --bg-color: #ffff;
     --secondary-color: #1093ff;
-    --search-bar-color: #f3f3f3;
-    --nav-hover-color: #003c6d;
+    --search-bar-color: #e9e7e7;
+    --bs-change-color: #212529;
+    --placeholder-color: #6c757d;
 }
 
 /* Landing Page Styles */
@@ -67,7 +68,7 @@
     color: transparent;
 }
 
-.navbar>.container-fluid {
+#index-nav>.container-fluid {
     background-color: var(--secondary-color);
     padding: 20px;
 }
@@ -188,8 +189,175 @@
 
 /* Login & Register Page Styles */
 
-.form-header {
-    cursor: pointer;
-}
 
 /* Login & Register Page Styles */
+
+/* Dashboard Styles */
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    padding: 15px;
+    transition: width 0.5s ease;
+}
+
+#content {
+    margin-left: 280px;
+    padding: 20px;
+    transition: margin 0.5s ease;
+}
+
+#sidebar a,
+#sidebar ul,
+#sidebar .dropdown,
+.form-header {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.large-nav-divider {
+    transition: opacity 0.3s ease;
+}
+
+#smallSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 4.5rem;
+    transition: width 0.3s ease;
+}
+
+#smallSidebar a,
+#smallSidebar ul,
+#smallSidebar .dropdown {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+
+/* Dashboard Styles */
+
+
+/* Message Styles */
+
+.message-container {
+    position: fixed; 
+    left: calc(352px + 20px); 
+    right: 20px; 
+    bottom: 10px; 
+    height: fit-content;
+    background-color: var(--search-bar-color); 
+    z-index: 1000; 
+}
+
+
+.ql-container.ql-snow  {
+    border: none; 
+    box-shadow: none; 
+
+}
+
+.ql-toolbar.ql-snow {
+    border: none;
+    padding: 7px;
+}
+
+.ql-snow .ql-stroke{
+    stroke: var(--bs-change-color);
+}
+
+.ql-snow .ql-fill {
+    fill: var(--bs-change-color);
+}
+
+.ql-editor.ql-blank::before {
+    color: rgb(161, 163, 165);
+    font-style: normal;
+    font-family: "Poppins";
+}
+
+.ql-editor {
+    padding: 7px 15px;
+}
+
+.ql-editor p {
+    font-size: 15px;
+}
+
+
+.ql-toolbar .ql-formats:not(:last-child)::after {
+    content: '';
+    display: inline-block;
+    width: 1px; 
+    height: 20px; 
+    background-color: rgb(161, 163, 165); 
+    margin: 0 5px; 
+    vertical-align: middle; 
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right: 0px;
+}
+
+#attatchement-button {
+    padding: 0px;
+}
+
+.attachment-button.show{
+    border: none;
+}
+
+/* Message Styles */
+
+
+/* Select2 Bootstrap Matching Styles */
+
+.select2-container--default .select2-selection--multiple {
+    background-color: var(--bs-body-bg);
+}
+
+.select2-results__option--selectable {
+    background-color: var(--bs-body-bg);
+}
+
+li.select2-results__option.select2-results__message {
+    background-color: var(--bs-body-bg);
+}
+
+.select2-dropdown {
+    border: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.select2-container--default .select2-selection--multiple {
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.select2-results__options:last-child {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--search-bar-color);
+}
+
+.select2-container--default .select2-results__option--selected {
+    background-color: var(--search-bar-color);
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+    padding: 5px;
+}
+
+/* Select2 Bootstrap Matching Styles */

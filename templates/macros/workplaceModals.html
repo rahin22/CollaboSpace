@@ -1,0 +1,73 @@
+{% macro createProject_modal(workplace) %}
+<div class="modal fade" id="createProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Create Project</h5>
+                    <p class="small text-muted">
+                        A project helps you organize tasks, manage deadlines, and facilitate collaboration. Within a workplace, projects allow teams to work on specific objectives and track their progress effectively.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="text-muted small mb-3 fst-italic">Required fields are marked with an asterisk (<span class="text-danger">*</span>).</div>
+                <form id="createProjectForm" action="{{ url_for('wrkplace.create_project', workplace_id=workplace.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="projectName" name="projectName" required oninput="limitWords(this, 25), checkProjectName()">
+                        <small id="project-feedback"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="projectDescription" class="form-label">Project Description</label>
+                        <textarea class="form-control" id="projectDescription" name="projectDescription" rows="3" placeholder="An optional brief description of the project"  oninput="countWords(this, 120)"></textarea>
+                        <small class="text-muted">0/120 words</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success" form="createProjectForm" id="projectSubmit">Create Project</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+
+{% macro addEmployee_modal(workplace, non_employees) %}
+<div class="modal fade" id="addEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Add Employees</h5>
+                    <p class="small text-muted">
+                        Add employees in your organisation to this workplace where they can collaborate and work on projects.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeesForm" action="{{ url_for('wrkplace.add_employees', workplace_id=workplace.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="employeeSelect" class="form-label">Select Employees</label>
+                        <select id="employeeSelect" class="form-select" multiple="multiple" style="width: 100%;" name="employeeSelect" required >
+                            {% for employee in non_employees %}
+                            <option value="{{ employee.user_id }}" data-img="{{ employee.user.pfp | b64encode }}">{{ employee.user.first_name }} {{ employee.user.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-success" form="addEmployeesForm" id="employeeSubmit">Add Employees</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+
+
+

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request, jsonify, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, DateField, SelectField, EmailField
@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
@@ -27,6 +27,9 @@ def admin_dashboard(organization_id):
      .group_by(Workplace.id).all()
     
     employees = Employee_Info.query.filter_by(organization_id=organization_id).all()
+
+    if current_user.id != organization.admin_id:
+        abort(403)  
     
     return render_template('admindash.html', organization=organization, workplaces=workplaces, employees=employees)
 
@@ -51,13 +54,24 @@ def add_workplace(organization_id):
         add_manager = User_Workplace(user_id=workplace_manager, workplace_id=new_workplace.id)
         db.session.add(add_manager)
         db.session.commit()
+
+        announcements_conversation = Conversation(title='Announcements', workplace_id=new_workplace.id, conversation_type='announcement')
+        db.session.add(announcements_conversation)
+        db.session.commit()  
+
+        workplace_employees = User_Workplace.query.filter_by(workplace_id=new_workplace.id).all()
+        for employee in workplace_employees:
+            participant = ConversationParticipants(conversation_id=announcements_conversation.id, user_id=employee.user_id)
+            db.session.add(participant)
         
-        return redirect(url_for('dashboard.admin_dashboard', organization_id=organization_id))
+        db.session.commit()
+
+        return redirect(url_for('wrkplace.adminWorkplace', workplace_id=new_workplace.id))
 
 
 @dashboard.route('/check_workplace/<work_name>/<org_id>')
 @login_required
-def check_code(work_name, org_id):
+def check_workplace(work_name, org_id):
     work_name_lower = work_name.lower()
     existing_workplace = Workplace.query.filter(func.lower(Workplace.workplace_name) == work_name_lower, Workplace.organization_id == org_id).first()
 
@@ -71,6 +85,9 @@ def check_code(work_name, org_id):
 def employee_management(organization_id):
     organization = Organization.query.filter_by(id=organization_id).first()
     employees = Employee_Info.query.filter_by(organization_id=organization_id).all()
+
+    if current_user.id != organization.admin_id:
+        abort(403)  
     
     return render_template('employeeMgmt.html', organization=organization, employees=employees)
 

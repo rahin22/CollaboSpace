@@ -10,37 +10,14 @@
 <head>
     {{ head_imports() }}
     <title>Dashboard</title>
-    <style>
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            padding: 15px;
-        }
-
-        #smallSidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-        }
-
-
-        
+    <style>        
         .card-body h3 {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100%;
         }
-
-        #content {
-            margin-left: 280px;
-            padding: 20px;
-        }
-
+yy
         .add-workplace-button {
             transition: all 0.3s;
         }
@@ -85,7 +62,7 @@
         <div class="row m-5">
             {% for workplace, employee_count in workplaces %}
             <div class="col-md-3 mb-4 m-2">
-                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;" onclick="window.location.href='{{ url_for('wrkplace.adminWorkplace', workplace_id=workplace.id) }}';">
+                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;" onclick="window.location.href='/workplace/{{ workplace.id }}';">
                     <div style="position: relative;">   
                         <img src="{{ url_for('static', filename=workplace.workplace_image) }}" class="card-img-top" alt="..." style="width: 100%; height: 10rem;">
                         <div class="card-body text-white" style="position: absolute; bottom: 0; width: 100%;">
@@ -112,7 +89,7 @@
         </div>
 
         <!-- Add Workplace Modal -->
-        <div class="modal" id="workplaceModal" tabindex="-1">
+        <div class="modal fade" id="workplaceModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -130,7 +107,7 @@
                         <form id="addWorkplaceForm" action="{{ url_for('dashboard.add_workplace', organization_id=organization.id) }}" method="POST">
                             <div class="mb-3">
                                 <label for="workplaceName" class="form-label">Workplace Name</label>
-                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="checkWorkPlaceName()" required>
+                                <input type="text" class="form-control" id="workplaceName" name="workplaceName" oninput="checkWorkPlaceName(), limitWords(this, 40)" required>
                                 <small id="workplace-feedback"></small>
                             </div>
                             <div class="mb-3">

@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
+import base64
 
 db = SQLAlchemy()
 
@@ -42,6 +43,7 @@ class Workplace(db.Model):
     manager = db.relationship('User', foreign_keys=[workplace_manager], backref='managed_workplaces')
     user_workplaces = db.relationship('User_Workplace', backref='workplace', lazy=True)
     projects = db.relationship('Project', backref='workplace', lazy=True)
+    conversations = db.relationship('Conversation', backref='workplace', lazy=True)
 
 # User_Workplaces Table (Associative Table)
 class User_Workplace(db.Model):
@@ -53,6 +55,7 @@ class User_Workplace(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
+
 # Projects Table
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -60,8 +63,7 @@ class Project(db.Model):
     description = db.Column(db.Text)
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
-    status = db.Column(db.String(50), nullable=False)
-    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    status = db.Column(db.String(50))
     workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
@@ -111,14 +113,66 @@ class Salary(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
+
+# Conversation Table
+class Conversation(db.Model):
+    __tablename__ = 'conversation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=True)
+    workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True, unique=True)
+    conversation_type = db.Column(db.String(50), nullable=False)  
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Indices for optimization
+    __table_args__ = (
+        db.Index('idx_conversation_type', 'conversation_type'),
+    )
+
+    messages = db.relationship('Message', backref='conversation', lazy=True)
+    participants = db.relationship('User', secondary='conversation_participants', backref='conversations', lazy=True)
+
+
+# Conversation Participants Table
+class ConversationParticipants(db.Model):
+    __tablename__ = 'conversation_participants'
+
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.now)
+
+
 # Messages Table
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now())
     read_status = db.Column(db.Boolean, default=False)
+
+    attachments = db.relationship('FileAttachment', backref='message', lazy=True)
+    
+    # Index for faster querying of recent messages in conversations
+    __table_args__ = (
+        db.Index('idx_conversation_id', 'conversation_id'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'conversation_id': self.conversation_id,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'user': {
+                'username': self.sender.username,
+                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')  # Convert bytes to Base64 string
+            }
+        }
+
 
 # File Attachments Table
 class FileAttachment(db.Model):
@@ -128,8 +182,11 @@ class FileAttachment(db.Model):
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+
 
 
 # Users Table
@@ -147,8 +204,6 @@ class User(db.Model, UserMixin):
     
     organizations = db.relationship('Organization', backref='admin', lazy=True)
     user_workplaces = db.relationship('User_Workplace', backref='user', lazy=True)
-    managed_projects = db.relationship('Project', backref='manager', lazy=True)
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
-    messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy=True)
     uploaded_files = db.relationship('FileAttachment', backref='uploader', lazy=True)
     employees = db.relationship('Employee_Info', back_populates='user', foreign_keys=[Employee_Info.user_id], lazy='dynamic')

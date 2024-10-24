@@ -11,27 +11,6 @@
     {{ head_imports() }}
     <title>Employee Management</title>
     <style>
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            padding: 15px;
-        }
-
-        #smallSidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-        }
-
-        #content {
-            margin-left: 280px;
-            padding: 20px;
-        }
-
         .logo-fill {
             fill: var(--secondary-color);
         }
@@ -117,12 +96,12 @@
 
                         <div class="mb-3">
                             <label for="position" class="form-label">Position</label>
-                            <input type="text" class="form-control" id="position" name="position">
+                            <input type="text" class="form-control" id="position" name="position" oninput="limitWords(this, 30)">
                         </div>    
 
                         <div class="mb-3">
                             <label for="salary" class="form-label">Salary</label>
-                            <input type="number" class="form-control" id="salary" name="salary">
+                            <input type="number" class="form-control" id="salary" name="salary" oninput="limitWords(this, 7)">
                         </div>
 
                     </form>
@@ -167,13 +146,6 @@
                 });
             });
         });
-
-        window.onload = function() {
-            document.getElementById('dashboard-pill').classList.remove('active');
-            document.getElementById('dashboard-pill').classList.add('link-dark');
-            document.getElementById('employee-pill').classList.add('active');
-            document.getElementById('employee-pill').classList.add('text-white');
-        }
         
     </script>
     
