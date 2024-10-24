@@ -128,7 +128,6 @@
 
         .message {
             padding: 5px;
-            overflow: hidden;
             display: flex;
             flex-direction: row;
         }
@@ -363,17 +362,15 @@
         });
         
 
-        let isUserAtBottom = true; // Flag to check if the user is at the bottom
+        let isUserAtBottom = true; 
 
-        // Function to check if the user is at the bottom of the page
         function checkScrollPosition() {
             const scrollPosition = document.body.scrollHeight - window.innerHeight - window.scrollY;
-            const threshold = 100; // Threshold for considering "at bottom"
+            const threshold = 100; 
         
             isUserAtBottom = scrollPosition < threshold;
         }
         
-        // Add event listener to track scrolling
         window.addEventListener('scroll', checkScrollPosition);
         
 

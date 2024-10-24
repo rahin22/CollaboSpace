@@ -361,3 +361,9 @@ li.select2-results__option.select2-results__message {
 }
 
 /* Select2 Bootstrap Matching Styles */
+
+#channel-content{
+    overflow-y: scroll;
+    height: 1000px;
+    scroll-behavior: smooth;
+}
