@@ -61,6 +61,17 @@ def index():
     logout_user()
     return render_template('index.html')
 
+@app.route('/aboutus')
+def aboutus():
+    logout_user()
+    return render_template('aboutus.html')
+
+@app.route('/home')
+def home():
+    logout_user()
+    return render_template('index.html')
+
+
 
 @socketio.on('send_message')
 def handle_send_message(data):
