@@ -60,6 +60,17 @@ def index():
     logout_user()
     return render_template('index.html')
 
+@app.route('/aboutus')
+def aboutus():
+    logout_user()
+    return render_template('aboutus.html')
+
+@app.route('/home')
+def home():
+    logout_user()
+    return render_template('index.html')
+
+
 
 
 # Register blueprints
