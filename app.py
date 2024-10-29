@@ -10,6 +10,7 @@ from entities.overview import overview as over_bp
 from entities.dashboard import dashboard as dash_bp
 from entities.workplace import wrkplace as wrk_bp
 from entities.messages import messages as msg_bp
+from datetime import datetime
 
 
 # Initialize Flask app
@@ -78,7 +79,7 @@ def handle_send_message(data):
     conversation_id = data['conversation_id']
     content = data['content']
     
-    message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id)
+    message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id, timestamp=datetime.now())
     db.session.add(message)
     db.session.commit()
     
@@ -98,6 +99,30 @@ def on_join(data):
 def handle_new_message(message):
     room = message['conversation_id']  
     socketio.emit('new_message', message, room=room)
+
+
+@socketio.on('delete_message')
+def handle_delete_message(data):
+    message_id = data['message_id']
+    message = Message.query.get(message_id)
+    db.session.delete(message)  
+    db.session.commit()
+    
+    socketio.emit('message_deleted', message_id)
+    print(f'Message {message_id} deleted')
+
+
+@socketio.on('edit_message')
+def handle_edit_message(data):
+    message_id = data['message_id']
+    content = data['content']
+    
+    message = Message.query.get(message_id)
+    message.content = content
+    db.session.commit()
+    
+    socketio.emit('message_edited', message.to_dict())
+    print(f'Message {message_id} edited')
 
 
 

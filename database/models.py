@@ -156,7 +156,6 @@ class Message(db.Model):
 
     attachments = db.relationship('FileAttachment', backref='message', lazy=True)
     
-    # Index for faster querying of recent messages in conversations
     __table_args__ = (
         db.Index('idx_conversation_id', 'conversation_id'),
     )
@@ -169,8 +168,29 @@ class Message(db.Model):
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'user': {
                 'username': self.sender.username,
-                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')  # Convert bytes to Base64 string
+                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')  
             }
+        }
+    
+
+class Reply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
+    reply_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False) 
+    reaction_type = db.Column(db.String(20), nullable=True)  
+
+    __table_args__ = (
+        db.Index('idx_message_reply', 'message_id', 'reply_id'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message_id': self.message_id,
+            'reply_id': self.reply_id,
+            'type': self.type,
+            'reaction_type': self.reaction_type
         }
 
 

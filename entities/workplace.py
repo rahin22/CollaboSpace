@@ -120,21 +120,50 @@ def add_employees(workplace_id):
 
 @wrkplace.route('/get_messages_for_channel/<conversation_type>/<int:channel_id>', methods=['GET'])
 def get_messages_for_channel(conversation_type, channel_id):
+    limit = int(request.args.get('limit', 10)) 
+    last_message_id = request.args.get('last_message_id')  
+
     if conversation_type == 'announcement':
         conversation = Conversation.query.filter_by(workplace_id=channel_id, conversation_type='announcement').first()
-        print(conversation)
     elif conversation_type == 'project':
         conversation = Conversation.query.filter_by(project_id=channel_id, conversation_type='project').first()
-        print(conversation)
     else:
         return jsonify({'error': 'Invalid conversation type'}), 400
 
     if conversation is None:
         return jsonify({'error': 'Conversation not found'}), 404
+    
+    print(conversation)
+    
+    query = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.desc())
+    reversed_query = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.asc())
 
-    messages = Message.query.filter_by(conversation_id=conversation.id).all()
+    date_dividers = {}
+    first_date = None
+
+    for message in reversed_query:
+        message_date = message.timestamp.date()
+        if message_date != first_date:
+            date_dividers[message.id] = message_date.strftime('%B %d, %Y')
+            first_date = message_date
+
+    if last_message_id:
+        query = query.filter(Message.id < last_message_id)
+
+    messages = query.limit(limit).all()
+    if messages:
+       min_id = min([message.id for message in query]) 
+       print(min_id)
+
+    is_first_batch = len(messages) < limit or (messages and messages[-1].id == min_id)
+    print(is_first_batch)
 
     return jsonify({
         'conversation_id': conversation.id,
-        'messages': [message.to_dict() for message in messages]
+        'messages': [message.to_dict() for message in messages],  
+        'is_first_batch': is_first_batch,
+        'date_dividers': date_dividers, 
     })
+
+
+
