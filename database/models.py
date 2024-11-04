@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
 import base64
+from sqlalchemy.ext.hybrid import hybrid_property
 
 db = SQLAlchemy()
 
@@ -150,32 +151,100 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.now())
     read_status = db.Column(db.Boolean, default=False)
 
+    replies = db.relationship('Reply', backref='original_message', lazy=True, foreign_keys='Reply.message_id')
+    replies_made = db.relationship('Reply', backref='reply_message', lazy=True, foreign_keys='Reply.reply_id')
     attachments = db.relationship('FileAttachment', backref='message', lazy=True)
     
     __table_args__ = (
         db.Index('idx_conversation_id', 'conversation_id'),
     )
 
+    def get_reaction_count(self, reaction_type):
+        return sum(1 for reply in self.replies if reply.reaction_type == reaction_type)
+    
+    @hybrid_property
+    def is_reply(self):
+        return any(reply.type == 'reply' for reply in self.replies_made)
+    
+
     def to_dict(self):
+        replied_to_message = None
+        if self.is_reply:
+            original_reply = self.replies_made[0]
+            
+            if original_reply.original_message:
+                replied_to_message = {
+                    'id': original_reply.message_id,
+                    'content': original_reply.original_message.content,
+                    'timestamp': original_reply.original_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    'user': {
+                        'username': original_reply.original_message.sender.username,
+                        'pfp': base64.b64encode(original_reply.original_message.sender.pfp).decode('utf-8')
+                    }
+                }
+            else:
+                replied_to_message = {
+                    'id': None,
+                    'content': "The original message has been deleted.",
+                    'timestamp': None,
+                    'user': {
+                        'username': None,
+                        'pfp': None
+                    }
+                }
+        
+        file_attachments = [
+        {
+            'id': attachment.id,
+            'filename': attachment.filename,
+            'file_path': attachment.file_path,
+            'file_type': attachment.file_type,
+            'uploaded_by_id': attachment.uploaded_by_id,
+            'project_id': attachment.project_id,
+            'task_id': attachment.task_id,
+            'created_at': attachment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': attachment.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        } for attachment in self.attachments
+    ]
+        
         return {
             'id': self.id,
             'content': self.content,
             'conversation_id': self.conversation_id,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_reply': self.is_reply, 
             'user': {
                 'username': self.sender.username,
-                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')  
-            }
+                'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')
+            },
+            'replied_to': replied_to_message, 
+            'replies': [
+                {
+                    'id': reply.id,
+                    'message_id': reply.message_id,
+                    'reply_id': reply.reply_id,
+                    'type': reply.type,
+                    'reaction_type': reply.reaction_type,
+                    'reaction_counts': {
+                        reaction: sum(1 for r in self.replies if r.reaction_type == reaction)
+                        for reaction in set(r.reaction_type for r in self.replies if r.reaction_type)
+                    },
+                    'user': {
+                        'user_id': reply.reply_message.sender.id,
+                    }
+                } for reply in self.replies
+            ],
+            'file_attachments': file_attachments
         }
     
-
+    
 class Reply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
+    message_id = db.Column(db.Integer, db.ForeignKey('message.id'))
     reply_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
     type = db.Column(db.String(50), nullable=False) 
     reaction_type = db.Column(db.String(20), nullable=True)  
@@ -196,9 +265,12 @@ class Reply(db.Model):
 
 # File Attachments Table
 class FileAttachment(db.Model):
+    __tablename__ = 'file_attachment'
+
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
+    file_type = db.Column(db.String(50), nullable=False)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)

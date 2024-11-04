@@ -6,7 +6,7 @@ from wtforms.validators import InputRequired, Length, Regexp, EqualTo, Validatio
 from passlib.hash import pbkdf2_sha256
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
+from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants, Reply
 import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
@@ -133,15 +133,19 @@ def get_messages_for_channel(conversation_type, channel_id):
     if conversation is None:
         return jsonify({'error': 'Conversation not found'}), 404
     
-    print(conversation)
-    
-    query = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.desc())
+    reply_subquery = db.session.query(Reply.reply_id).filter(Reply.type == 'reaction').subquery()
+    query = Message.query.filter(Message.conversation_id == conversation.id).filter(Message.id.notin_(reply_subquery)).order_by(Message.timestamp.desc())
     reversed_query = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.asc())
+
+    replies_query = Message.query.join(Reply, Message.id == Reply.reply_id).filter(Message.conversation_id == conversation.id).order_by(Message.timestamp.desc())
 
     date_dividers = {}
     first_date = None
 
     for message in reversed_query:
+        if Reply.query.filter_by(reply_id=message.id, type='reaction').first() is not None:
+            continue 
+
         message_date = message.timestamp.date()
         if message_date != first_date:
             date_dividers[message.id] = message_date.strftime('%B %d, %Y')
@@ -149,18 +153,20 @@ def get_messages_for_channel(conversation_type, channel_id):
 
     if last_message_id:
         query = query.filter(Message.id < last_message_id)
+        replies_query = replies_query.filter(Message.id < last_message_id)
 
     messages = query.limit(limit).all()
+    replies = replies_query.all()
     if messages:
        min_id = min([message.id for message in query]) 
        print(min_id)
 
     is_first_batch = len(messages) < limit or (messages and messages[-1].id == min_id)
-    print(is_first_batch)
 
     return jsonify({
         'conversation_id': conversation.id,
         'messages': [message.to_dict() for message in messages],  
+        'replies': [reply.to_dict() for reply in replies],
         'is_first_batch': is_first_batch,
         'date_dividers': date_dividers, 
     })

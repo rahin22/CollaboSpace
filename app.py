@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from extensions import socketio
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, join_room
@@ -28,7 +29,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'authorise.login'
-socketio = SocketIO(app)
+socketio.init_app(app) 
 oauth = OAuth(app)
 
 
@@ -71,61 +72,6 @@ def aboutus():
 def home():
     logout_user()
     return render_template('index.html')
-
-
-
-@socketio.on('send_message')
-def handle_send_message(data):
-    conversation_id = data['conversation_id']
-    content = data['content']
-    
-    message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id, timestamp=datetime.now())
-    db.session.add(message)
-    db.session.commit()
-    
-    socketio.emit('new_message', message.to_dict())
-
-
-
-@socketio.on('join')
-def on_join(data):
-    room = data['room']  
-    join_room(room)
-    print(f'User has joined room: {room}')
-
-
-
-@socketio.on('new_message')
-def handle_new_message(message):
-    room = message['conversation_id']  
-    socketio.emit('new_message', message, room=room)
-
-
-@socketio.on('delete_message')
-def handle_delete_message(data):
-    message_id = data['message_id']
-    message = Message.query.get(message_id)
-    db.session.delete(message)  
-    db.session.commit()
-    
-    socketio.emit('message_deleted', message_id)
-    print(f'Message {message_id} deleted')
-
-
-@socketio.on('edit_message')
-def handle_edit_message(data):
-    message_id = data['message_id']
-    content = data['content']
-    
-    message = Message.query.get(message_id)
-    message.content = content
-    db.session.commit()
-    
-    socketio.emit('message_edited', message.to_dict())
-    print(f'Message {message_id} edited')
-
-
-
 
 
 
