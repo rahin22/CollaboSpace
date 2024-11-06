@@ -13,6 +13,11 @@ from sqlalchemy import func
 
 wrkplace = Blueprint('wrkplace', __name__)
 
+
+def load_js_inline(filepath):
+    with current_app.open_resource(filepath) as f:
+        return f.read().decode("utf-8")
+
 @wrkplace.route('/workplace/<int:workplace_id>')
 @login_required
 def adminWorkplace(workplace_id):
@@ -20,6 +25,7 @@ def adminWorkplace(workplace_id):
     employees = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
     organization = Organization.query.filter_by(id=workplace.organization_id).first()
     projects = Project.query.filter_by(workplace_id=workplace_id).all()
+    messages_script = load_js_inline("static/messages.js")
     
     workplace_users = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
     workplace_user_ids = {uw.user_id for uw in workplace_users}
@@ -30,7 +36,7 @@ def adminWorkplace(workplace_id):
     if current_user.id != organization.admin_id:
         abort(403)  
 
-    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees)
+    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script)
 
 @wrkplace.route('/check_project/<project_name>/<work_id>')
 @login_required
