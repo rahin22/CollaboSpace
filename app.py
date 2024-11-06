@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from extensions import socketio
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, join_room
@@ -10,6 +11,7 @@ from entities.overview import overview as over_bp
 from entities.dashboard import dashboard as dash_bp
 from entities.workplace import wrkplace as wrk_bp
 from entities.messages import messages as msg_bp
+from datetime import datetime
 
 
 # Initialize Flask app
@@ -27,7 +29,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'authorise.login'
-socketio = SocketIO(app)
+socketio.init_app(app) 
 oauth = OAuth(app)
 
 
@@ -72,6 +74,7 @@ def home():
     return render_template('index.html')
 
 
+<<<<<<< HEAD
 @socketio.on('send_message')
 def handle_send_message(data):
     conversation_id = data['conversation_id']
@@ -102,6 +105,8 @@ def handle_new_message(message):
 
 
 
+=======
+>>>>>>> ac1b8fa4a245ed39aefebae3e1be869972bac24c
 
 # Register blueprints
 app.register_blueprint(auth_bp)

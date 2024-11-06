@@ -245,19 +245,26 @@
 /* Message Styles */
 
 .message-container {
-    position: fixed; 
-    left: calc(352px + 20px); 
-    right: 20px; 
-    bottom: 10px; 
+    position: fixed;
+    left: calc(352px + 20px);
+    right: 20px;
+    bottom: 10px;
     height: fit-content;
-    background-color: var(--search-bar-color); 
-    z-index: 1000; 
+    background-color: var(--search-bar-color);
+    z-index: 1000;
 }
 
 
-.ql-container.ql-snow  {
-    border: none; 
-    box-shadow: none; 
+.editor-message-container {
+    width: 100%;
+    height: fit-content;
+    background-color: var(--search-bar-color);
+}
+
+
+.ql-container.ql-snow {
+    border: none;
+    box-shadow: none;
 
 }
 
@@ -266,7 +273,7 @@
     padding: 7px;
 }
 
-.ql-snow .ql-stroke{
+.ql-snow .ql-stroke {
     stroke: var(--bs-change-color);
 }
 
@@ -289,14 +296,69 @@
 }
 
 
+.ql-code-block-container {
+    background-color: #23241f;
+    color: #f8f8f2;
+    overflow: visible;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-family: monospace;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.message-content blockquote {
+    border-left: 4px solid #ccc;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-left: 16px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.message-content ol {
+    padding-left: 1rem;
+    margin: 0;
+    padding: 0; 
+    box-sizing: border-box;
+}
+
+.message-content li[data-list=bullet] {
+    list-style-type: none;
+    position: relative;
+}
+
+
+.message-content li[data-list=bullet] > .ql-ui:before {
+    display: inline-block;
+    margin-left: -1.5em;
+    margin-right: .3em;
+    text-align: right;
+    white-space: nowrap;
+    width: 1.2em;
+}
+
+.message-content .ql-ui {
+    position: absolute;
+}
+
+.message-content li[data-list=bullet] > .ql-ui:before {
+    content: '\2022';
+}
+
+
+
 .ql-toolbar .ql-formats:not(:last-child)::after {
     content: '';
     display: inline-block;
-    width: 1px; 
-    height: 20px; 
-    background-color: rgb(161, 163, 165); 
-    margin: 0 5px; 
-    vertical-align: middle; 
+    width: 1px;
+    height: 20px;
+    background-color: rgb(161, 163, 165);
+    margin: 0 5px;
+    vertical-align: middle;
 }
 
 .ql-toolbar.ql-snow .ql-formats {
@@ -307,9 +369,68 @@
     padding: 0px;
 }
 
-.attachment-button.show{
+.attachment-button.show {
     border: none;
 }
+
+.reactions span {
+    border: 1px solid var(--bs-border-color); 
+    padding: 2px 6px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    font-size: 0.85em; 
+    color: var(--text-color, #333); 
+    background-color: var(--search-bar-color); 
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.reactions span:hover {
+    background-color: var(--bs-body-bg);
+}
+
+
+.reply-spline {
+    position: absolute;
+    margin-left: 15px;
+    margin-top: 10px;
+    width: fit-content;
+}
+
+.reply-spline-vertical {
+    width: 2px;
+    height: 20px; /* Adjust height for vertical part */
+    background-color: #ccc;
+    border-radius: 1px;
+    position: relative;
+    left: 0;
+    top: 0;
+}
+
+.reply-spline-horizontal {
+    width: 20px; 
+    height: 2px;
+    background-color: #ccc;
+    border-radius: 1px;
+    position: absolute; 
+    left: 0;
+}
+
+.message-reply {
+    max-height: 40px;
+    overflow: hidden;
+}
+
+.message-replied-content {
+    transition: all 0.3s;
+}
+
+.message-replied-content:hover {
+    scale: 1.03;
+}
+
+
 
 /* Message Styles */
 
@@ -361,9 +482,3 @@ li.select2-results__option.select2-results__message {
 }
 
 /* Select2 Bootstrap Matching Styles */
-
-#channel-content{
-    overflow-y: scroll;
-    height: 1000px;
-    scroll-behavior: smooth;
-}
