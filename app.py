@@ -72,7 +72,6 @@ def home():
     return render_template('index.html')
 
 
-
 @socketio.on('send_message')
 def handle_send_message(data):
     conversation_id = data['conversation_id']
