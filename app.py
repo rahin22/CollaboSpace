@@ -74,6 +74,39 @@ def home():
     return render_template('index.html')
 
 
+<<<<<<< HEAD
+@socketio.on('send_message')
+def handle_send_message(data):
+    conversation_id = data['conversation_id']
+    content = data['content']
+    
+    message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id)
+    db.session.add(message)
+    db.session.commit()
+    
+    socketio.emit('new_message', message.to_dict())
+
+
+
+@socketio.on('join')
+def on_join(data):
+    room = data['room']  
+    join_room(room)
+    print(f'User has joined room: {room}')
+
+
+
+@socketio.on('new_message')
+def handle_new_message(message):
+    room = message['conversation_id']  
+    socketio.emit('new_message', message, room=room)
+
+
+
+
+
+=======
+>>>>>>> ac1b8fa4a245ed39aefebae3e1be869972bac24c
 
 # Register blueprints
 app.register_blueprint(auth_bp)
