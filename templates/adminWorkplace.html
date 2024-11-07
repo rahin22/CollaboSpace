@@ -6,8 +6,8 @@
 {% from "macros/workplaceModals.html" import addEmployee_modal %}
 {% from "macros/workplaceModals.html" import createLink_modal %}
 {% from "macros/workplaceModals.html" import deleteMessage_modal %}
-{% from "macros/workplaceModals.html" import editMessage_modal %}
 {% from "macros/sidebar.html" import workplace_sidebar %}
+{% from "macros/workplaceModals.html" import filePreviewModal %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -266,10 +266,11 @@
     </nav>
 
 
+
     <div class="workplace-content">
 
-        <div class="mb-5 channel-main" id="channel-content"></div>
-        <div class="mb-5 channel-main" id="channel-file-content"></div>
+        <div class="mb-5 channel-main" id="channel-content" style="display: none;"></div>
+        <div class="mb-5 channel-main" id="channel-file-content" style="display: none;"></div>
 
         <form id="messageForm" action="" enctype="multipart/form-data" method="POST" style="display: none;">
             <div class="message-container rounded-4 border">
@@ -330,7 +331,7 @@
 
 
     {{ deleteMessage_modal() }}
-    {{ editMessage_modal() }}   
+    {{ filePreviewModal() }}
     {{ createLink_modal() }}
     {{ addEmployee_modal(workplace, non_employees) }}
     {{ createProject_modal(workplace) }}
@@ -340,6 +341,7 @@
 
     <script>
 
+        let currentConversationId;
         let channelId;
         let conversationType = 'announcement';
         let existingDateDividers = new Set();
@@ -347,14 +349,15 @@
         let isReply = false;
         let selectedFiles = [];
 
-        let isMessagePage = false;
         let userReactions = {};
         let renderReply = false;
 
 
-        const channelMain = document.querySelector('.channel-main');
+        const channelMain = document.querySelectorAll('.channel-main');
         const channelContent = document.getElementById('channel-content');
         const channelFileContent = document.getElementById('channel-file-content');
+        const workplaceInfo = document.getElementById('workplace-infoBar');
+        const workplaceContent = document.querySelector('.workplace-content');
         const socket = io(); 
         const currentUserId = "{{ current_user.id }}";
 
@@ -385,6 +388,7 @@
           
             document.getElementById('channel-title').innerHTML = document.querySelector('.tabActive').innerHTML;
             document.querySelector('.tabActive').click();
+            workplaceInfo.querySelector('.active').click();     
         };
 
         
@@ -393,7 +397,8 @@
         document.querySelectorAll('.channel-tab').forEach(tab => {
             const channelTitle = document.getElementById('channel-title');
             tab.addEventListener('click', async (e) => {
-                
+
+                //TODO: Further into the migration move the proprietary messaging clear functionality to the channel-page conditional statements
                 if (typeof existingDateDividers !== 'undefined' && typeof existingDateDividers.clear === 'function') {
                     existingDateDividers.clear();
                 }
@@ -419,6 +424,7 @@
                 emojiPickerContainer = null;
                 emojiPickerOpen = false; 
                 isUserAtBottom = true;
+                //TODO: Further into the migration move the proprietary messaging clear functionality to the channel-page conditional statements
 
 
                 document.querySelector('.tabActive').classList.remove('tabActive');
@@ -428,6 +434,10 @@
                 channelId = tab.getAttribute('data-channel-id');
 
                 channelContent.innerHTML = '';
+                channelFileContent.innerHTML = '';
+
+                // FIXME: This is a temporary fix for the issue of the channel not reseting when a user clicks on a different channel (change to the first displyed child element)
+                document.getElementById('channel-messages').click();
             });
         });
 
@@ -438,19 +448,28 @@
                 const pageId = page.getAttribute('id');
                 const channelMessages = document.getElementById('channel-messages');
                 const channelFiles = document.getElementById('channel-files');
-                const workplaceInfo = document.getElementById('workplace-infoBar');
-                const workplaceContent = document.querySelector('.workplace-content');
                 workplaceInfo.querySelector('.active').classList.remove('active');
                 page.classList.add('active');
-                channelContent.innerHTML = '';
+                messageForm.style.display = 'none';
+                workplaceContent.style.height = 'calc(100vh - 150px)';
 
+                channelMain.forEach(item => {
+                    item.style.display = 'none';
+                    item.innerHTML = '';
+                });
 
                 if (pageId === 'channel-messages') {
-                    channelContent.style.display = 'block'; 
+                    channelContent.removeEventListener('scroll', handleScroll);
+                    channelContent.innerHTML = '';
+
+                    if (typeof existingDateDividers !== 'undefined' && typeof existingDateDividers.clear === 'function') {
+                        existingDateDividers.clear();
+                    }
+
+                    workplaceContent.style.height = 'calc(100vh - 300px)';
+                    channelContent.style.display = 'block';
                     const messageForm = document.getElementById('messageForm');
                     const response = await fetch(`/get_messages_for_channel/${conversationType}/${channelId}`);
-                    isMessagePage = true;
-                    console.log(channelContent)
                     
                     if (response.ok) {
                         const data = await response.json();
@@ -462,19 +481,37 @@
                         messageForm.style.display = 'block';
             
                         renderMessages(messages, true, isFirstBatch, dateDividers); 
+                        channelContent.addEventListener('scroll', handleScroll);
                     } else {
                         console.error('Error fetching messages:', response.statusText);
+                        alert('Error fetching messages');
                     }
 
                 } else if (pageId === 'channel-files') {
-                    channelContent.style.display = 'none';
-                    messageForm.style.display = 'none';
+                    channelFileContent.style.display = 'block';
+                    console.log(channelId)
+                    const response = await fetch(`/get_files_for_channel/${conversationType}/${channelId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const files = data.files;
+                        console.log(files)
+                        renderFiles(files);
+                    } else {
+                        console.error('Error fetching files:', response.statusText);
+                        alert('Error fetching files');
+                    }
                 }
             });
         });
 
 
+        // Messaging Functionality Js
         {{ messages_script | safe }}
+        // Messaging Functionality Js
+
+        // File Functionality Js
+        {{ files_script | safe }}
+        // File Functionality Js
 
 
         $(document).ready(function() {

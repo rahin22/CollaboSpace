@@ -278,6 +278,23 @@ class FileAttachment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'file_path': self.file_path,
+            'file_type': self.file_type,
+            'uploaded_by_id': self.uploaded_by_id,
+            'project_id': self.project_id,
+            'task_id': self.task_id,
+            'message_id': self.message_id,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'user': {
+                'username': self.uploader.username,
+            }
+        }
+
 
 
 

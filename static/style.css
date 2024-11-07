@@ -435,6 +435,15 @@
 /* Message Styles */
 
 
+/* Workplace File Styles */
+
+.search-dropdown .cursor-pointer:hover{
+    background-color: var(--search-bar-color);
+    cursor: pointer;
+}
+
+/* Workplace File Styles */
+
 /* Select2 Bootstrap Matching Styles */
 
 .select2-container--default .select2-selection--multiple {

@@ -26,6 +26,7 @@ def adminWorkplace(workplace_id):
     organization = Organization.query.filter_by(id=workplace.organization_id).first()
     projects = Project.query.filter_by(workplace_id=workplace_id).all()
     messages_script = load_js_inline("static/messages.js")
+    files_script = load_js_inline("static/channelFiles.js")
     
     workplace_users = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
     workplace_user_ids = {uw.user_id for uw in workplace_users}
@@ -36,7 +37,7 @@ def adminWorkplace(workplace_id):
     if current_user.id != organization.admin_id:
         abort(403)  
 
-    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script)
+    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script)
 
 @wrkplace.route('/check_project/<project_name>/<work_id>')
 @login_required
@@ -169,6 +170,8 @@ def get_messages_for_channel(conversation_type, channel_id):
 
     is_first_batch = len(messages) < limit or (messages and messages[-1].id == min_id)
 
+    print(conversation.id,'conversation id')
+
     return jsonify({
         'conversation_id': conversation.id,
         'messages': [message.to_dict() for message in messages],  
@@ -178,4 +181,14 @@ def get_messages_for_channel(conversation_type, channel_id):
     })
 
 
+@wrkplace.route('/get_files_for_channel/<conversation_type>/<int:channel_id>', methods=['GET'])
+def get_files_for_channel(conversation_type, channel_id):
+    print(conversation_type, channel_id)
+    if conversation_type == 'announcement':
+        conversation = Conversation.query.filter_by(workplace_id=channel_id, conversation_type='announcement').first()
+        files = (FileAttachment.query.join(Message, Message.id == FileAttachment.message_id).filter(Message.conversation_id == conversation.id).order_by(FileAttachment.created_at.desc()).all())
+        
+    elif conversation_type == 'project':
+        files = FileAttachment.query.filter_by(project_id=channel_id).order_by(FileAttachment.created_at.desc()).all()
 
+    return jsonify({'files': [file.to_dict() for file in files]})

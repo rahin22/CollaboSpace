@@ -68,7 +68,7 @@ quill.on('text-change', function (delta, old, source) {
 
 let loadingOlderMessages = false; 
 
-channelContent.addEventListener('scroll', async () => {
+async function handleScroll() {
     if (channelContent.scrollTop === 0 && !loadingOlderMessages) {
         loadingOlderMessages = true;
 
@@ -95,7 +95,9 @@ channelContent.addEventListener('scroll', async () => {
 
         loadingOlderMessages = false; 
     }
-});
+}
+
+
 
 let fileId = [];
 
@@ -144,12 +146,16 @@ document.getElementById('messageForm').addEventListener('submit', async (e) => {
     const messageData = {
         content: messageContent,    
         conversation_id: currentConversationId, 
+        conversation_type: conversationType,   
+        channel_id: channelId,
         file_ids: fileId,
     };
 
     const replyData = {
         content: messageContent,
         conversation_id: currentConversationId,
+        conversation_type: conversationType,    
+        channel_id: channelId,
         reply_message_id: replyMessageId,
         file_ids: fileId,
     };
@@ -510,6 +516,7 @@ function renderMessages(messages, prepend = false, isFirstBatch = false, dateDiv
     }
 
     channelContent.scrollTop = channelContent.scrollHeight;
+
 }
 
 
@@ -560,7 +567,8 @@ function appendMessage(message) {
     `;
 
     const previousMessage = channelContent.lastElementChild;
-    if (previousMessage) {
+
+    if (!previousMessage.classList.contains('channel-start-message')) {
         const previousTimestamp = previousMessage.querySelector('.message-timestamp span').dataset.timestamp;
         const previousMessageDate = new Date(previousTimestamp).toDateString();
 

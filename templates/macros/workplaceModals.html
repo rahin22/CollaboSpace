@@ -117,58 +117,33 @@
     </div>
 {% endmacro %}
 
-
-
-{% macro editMessage_modal() %}
-<div class="modal fade" id="editMessageModal" tabindex="-1" aria-labelledby="editMessageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{% macro filePreviewModal() %}
+<div class="modal fade" id="filePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editMessageModalLabel">Edit Message</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="previewFileName"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="message-container rounded-4 border">
-                    <div class="mb-3">
-                        <div id="editToolbar">
-                            <span class="ql-formats">
-                                <button class="ql-bold" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Bold</b> <br> Ctrl + B"></button>
-                                <button class="ql-italic" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Italic</b> <br> Ctrl + I"></button>
-                                <button class="ql-strike" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Strikethrough</b>"></button>
-                            </span>
-                            <span class="ql-formats">
-                                <button class="ql-link" id="editCustomLinkButton" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Link</b>"></button>
-                                <button class="ql-blockquote" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Block Quote</b>"></button>
-                                <button class="ql-code-block" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Code Block</b>"></button>
-                            </span>
-                            <span class="ql-formats">
-                                <button class="ql-list" value="ordered" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Ordered List</b>"></button>
-                                <button class="ql-list" value="bullet" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Bullet List</b>"></button>
-                            </span>
-                        </div>
-                        <div id="editEditor" class="overflow-auto" style="max-height: 40vh;"></div>
-                        <textarea id="editHiddenTextarea" name="message" style="display: none;"></textarea>
-                    </div>
-                    <div class="d-flex justify-content-between p-2" style="height: fit-content;">
-                        <div class="dropdown">
-                            <button class="btn attachment-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="ri-add-circle-line fs-4"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </div>
-                        <button id="confirmEditButton" type="button" class="btn btn-success btn-sm">Save Changes <i class="ri-send-plane-2-line"></i></button>
-                    </div>
-                </div>
+            <div class="modal-body" id="previewContent">
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto" id="previewFileInfo"></small>
+                <a href="#" class="btn btn-primary" id="previewDownloadBtn" download>
+                    <i class="ri-download-2-line"></i> Download
+                </a>
             </div>
         </div>
     </div>
 </div>
-
 {% endmacro %}
+
+
+
+
+
+
+
 
 
 

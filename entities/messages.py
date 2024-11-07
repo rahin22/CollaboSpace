@@ -27,6 +27,8 @@ def handle_send_message(data):
     conversation_id = data['conversation_id']
     content = data['content']
     file_ids = data['file_ids']
+    conversation_type = data['conversation_type']
+    channel_id = data['channel_id']
     
     message = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id, timestamp=datetime.now())
     db.session.add(message)
@@ -37,6 +39,10 @@ def handle_send_message(data):
         for file_id in file_ids:
             file_attachment = FileAttachment.query.get(file_id)
             file_attachment.message_id = message.id
+
+            if conversation_type == 'project':
+                file_attachment.project_id = channel_id
+                
             db.session.commit()
 
     
@@ -178,6 +184,9 @@ def handle_send_reply(data):
     content = data['content']
     conversation_id = data['conversation_id']
     file_ids = data['file_ids']
+    conversation_type = data['conversation_type']
+    channel_id = data['channel_id']
+    
 
     newMessage = Message(conversation_id=conversation_id, content=content, sender_id=current_user.id, timestamp=datetime.now())
     db.session.add(newMessage)
@@ -191,6 +200,10 @@ def handle_send_reply(data):
         for file_id in file_ids:
             file_attachment = FileAttachment.query.get(file_id)
             file_attachment.message_id = newMessage.id
+
+            if conversation_type == 'project':
+                file_attachment.project_id = channel_id
+
             db.session.commit()
 
     reply_data = newMessage.to_dict()
