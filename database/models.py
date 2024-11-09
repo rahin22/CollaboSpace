@@ -85,8 +85,20 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    
     files = db.relationship('FileAttachment', backref='task', lazy=True)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'task_name': self.task_name,
+            'description': self.description,
+            'due_date': self.due_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'status': self.status,
+            'project_id': self.project_id,
+            'assigned_user_id': self.assigned_user_id,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'files': [file.to_dict() for file in self.files]
+        }
 
 # Employee Info Table
 class Employee_Info(db.Model):
@@ -203,6 +215,7 @@ class Message(db.Model):
             'filename': attachment.filename,
             'file_path': attachment.file_path,
             'file_type': attachment.file_type,
+            'file_size': attachment.file_size,
             'uploaded_by_id': attachment.uploaded_by_id,
             'project_id': attachment.project_id,
             'task_id': attachment.task_id,
@@ -271,6 +284,7 @@ class FileAttachment(db.Model):
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(50), nullable=False)
+    file_size = db.Column(db.Integer)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
@@ -284,6 +298,7 @@ class FileAttachment(db.Model):
             'filename': self.filename,
             'file_path': self.file_path,
             'file_type': self.file_type,
+            'file_size': self.file_size,
             'uploaded_by_id': self.uploaded_by_id,
             'project_id': self.project_id,
             'task_id': self.task_id,

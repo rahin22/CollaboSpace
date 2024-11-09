@@ -27,6 +27,7 @@ def adminWorkplace(workplace_id):
     projects = Project.query.filter_by(workplace_id=workplace_id).all()
     messages_script = load_js_inline("static/messages.js")
     files_script = load_js_inline("static/channelFiles.js")
+    tasks_script = load_js_inline("static/tasks.js")
     
     workplace_users = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
     workplace_user_ids = {uw.user_id for uw in workplace_users}
@@ -37,7 +38,7 @@ def adminWorkplace(workplace_id):
     if current_user.id != organization.admin_id:
         abort(403)  
 
-    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script)
+    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script, tasks_script=tasks_script, workplace_users=workplace_users)
 
 @wrkplace.route('/check_project/<project_name>/<work_id>')
 @login_required
@@ -192,3 +193,20 @@ def get_files_for_channel(conversation_type, channel_id):
         files = FileAttachment.query.filter_by(project_id=channel_id).order_by(FileAttachment.created_at.desc()).all()
 
     return jsonify({'files': [file.to_dict() for file in files]})
+
+
+@wrkplace.route('/get_tasks_for_project/<int:project_id>', methods=['GET'])
+def get_tasks_for_project(project_id):
+    tasks = Task.query.filter_by(project_id=project_id).all()
+    return jsonify({'tasks': [task.to_dict() for task in tasks]})
+
+
+@wrkplace.route('/check_task/<task_name>/<project_id>')
+@login_required
+def check_task(task_name, project_id):
+    task_name_lower = task_name.lower()
+    existing_task = Task.query.filter(func.lower(Task.task_name) == task_name_lower, Task.project_id == project_id).first()
+
+    if existing_task:
+        return jsonify({'available': False, 'message': 'Task already exists within this project'})
+    return jsonify({'available': True, 'message': 'Task name is available'})

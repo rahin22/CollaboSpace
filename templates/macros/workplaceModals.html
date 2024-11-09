@@ -140,6 +140,104 @@
 
 
 
+{% macro createTask_modal(workplace_users) %}
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+    <div class="modal-content">
+        <form id="createTaskForm" action="" method="POST">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Create New Task</h5>
+                    <p class="small text-muted">
+                        A task helps you break down projects into manageable pieces, assign responsibilities, and track progress. Within a project, tasks allow team members to focus on specific activities and ensure timely completion.
+                    </p>
+                </div>
+            </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label for="taskTitle" class="form-label">Task Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="taskTitle" oninput="checkTaskName()" required>
+                <small id="task-feedback"></small>
+            </div>
+            <div class="mb-3">
+                <label for="taskDescription" class="form-label">Task Description <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="taskDescription" rows="5" required placeholder="Provide a brief description of the task" oninput="countWords(this, 200)"></textarea>
+                <small class="text-muted">0/200 words</small>
+            </div>
+            <div class="mb-3">
+                <label for="taskDeadline" class="form-label">Deadline <span class="text-danger">*</span></label>
+                <input type="datetime-local" class="form-control" id="taskDeadline" required>
+            </div>
+            <div class="mb-3 d-flex flex-column">
+                <label for="taskEmployeeSelect" class="form-label">Assign Task</label>
+                <small class="text-muted mb-1">Optionally assign to a specific employee.</small>
+                <select id="taskEmployeeSelect" class="form-select" style="width: 100%;" name="taskEmployeeSelect" >
+                    <option value="">N/A</option>
+                    {% for employee in workplace_users %}
+                    <option value="{{ employee.user_id }}" data-img="{{ employee.user.pfp | b64encode }}">{{ employee.user.first_name }} {{ employee.user.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="taskSubmit" class="btn btn-primary">Create Task</button>
+        </div>
+        </form>
+    </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro submitTask_modal() %}
+<!-- Submit Task Modal -->
+<div class="modal fade" id="submitTaskModal" tabindex="-1" aria-labelledby="submitTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="submitTaskModalLabel">Confirm Task Submission</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Attached Files:</h6>
+          <ul id="attachedFilesList" class="list-group mb-3"></ul>
+          <p>Are you sure you want to submit this task?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmSubmitTask">Submit Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro deleteTask_modal() %}
+<!-- Delete Task Confirmation Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteTaskModalLabel">Delete </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this task?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteTask">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+
+
+
 
 
 

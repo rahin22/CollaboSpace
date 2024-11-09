@@ -2,6 +2,20 @@ let mediaFiles = [];
 let regularFiles = [];
 
 function getFileIconAndColor(mimeType, filename) {
+    // Image files
+    if (mimeType.startsWith('image/')) {
+        return {
+            icon: 'ri-image-fill',
+            color: '#4CAF50'
+        };  
+    }
+    // Video files
+    if (mimeType.startsWith('video/')) {
+        return {
+            icon: 'ri-video-fill',
+            color: '#F44336'
+        };
+    }
     // Audio files
     if (mimeType.startsWith('audio/')) {
         return {

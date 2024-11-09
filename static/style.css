@@ -444,6 +444,20 @@
 
 /* Workplace File Styles */
 
+
+/* Task Styles */
+
+.add-task-button {
+    transition: all 0.3s;
+}
+
+.add-task-button:hover {
+    color: var(--secondary-color);
+    cursor: pointer;
+}
+
+/* Task Styles */
+
 /* Select2 Bootstrap Matching Styles */
 
 .select2-container--default .select2-selection--multiple {
@@ -490,4 +504,33 @@ li.select2-results__option.select2-results__message {
     padding: 5px;
 }
 
+.select2-container--default .select2-selection--single {
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 4px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+.select2-container .select2-selection--single {
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: auto;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--bs-change-color);
+    line-height: 28px;
+}
+
+.select2-search--dropdown {
+    display: block;
+    padding: 0px;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: none;
+    background-color: var(--bs-body-bg);
+}
 /* Select2 Bootstrap Matching Styles */

@@ -42,7 +42,7 @@ def handle_send_message(data):
 
             if conversation_type == 'project':
                 file_attachment.project_id = channel_id
-                
+
             db.session.commit()
 
     
@@ -63,7 +63,8 @@ def upload_message_file():
     
         file.save(file_path)
         saved_file_paths.append(file_path)
-        file_attachment = FileAttachment(file_path=file_path, file_type=file.content_type, uploaded_by_id=current_user.id, filename=safe_filename, created_at=datetime.now())
+        file_size = os.path.getsize(file_path)
+        file_attachment = FileAttachment(file_path=file_path, file_type=file.content_type, file_size=file_size, uploaded_by_id=current_user.id, filename=safe_filename, created_at=datetime.now())
         db.session.add(file_attachment)
         db.session.commit()
         attachment_ids.append(file_attachment.id)

@@ -420,40 +420,15 @@ function renderMessages(messages, prepend = false, isFirstBatch = false, dateDiv
 
 
                     let iconClass;
-                    const fileExtension = file.filename.split('.').pop().toLowerCase();
-            
-                    switch (fileExtension) {
-                        case 'pdf':
-                            iconClass = 'ri-file-pdf-2-line'; 
-                            break;
-                        case 'zip':
-                        case 'rar':
-                        case '7z':
-                            iconClass = 'ri-file-zip-line'; 
-                            break;
-                        case 'doc':
-                        case 'docx':
-                            iconClass = 'ri-file-word-line'; 
-                            break;
-                        case 'xls':
-                        case 'xlsx':
-                            iconClass = 'ri-file-excel-line';
-                            break;
-                        case 'ppt':
-                        case 'pptx':
-                            iconClass = 'ri-file-ppt-line'; 
-                            break;
-                        default:
-                            iconClass = 'ri-file-line'; 
-                            break;
-                    }
-            
+
+                    const getIcon = getFileIconAndColor(file.file_type, file.filename);
+                    iconClass = getIcon.icon;
                     const icon = document.createElement("i");
-                    icon.className = `${iconClass} display-3 me-2`;                             
+                    icon.className = `${iconClass} display-3 me-2`;   
+                    icon.style.color = getIcon.color;                          
                     messageDiv.querySelector('.file-attachments').appendChild(fileAttachment);
                     fileAttachment.appendChild(fileDownloadLink);
                     fileAttachment.appendChild(icon);
-                    
                 }
                     
             });
@@ -627,35 +602,12 @@ function appendMessage(message) {
                 const tooltip = new bootstrap.Tooltip(fileDownloadLink); 
 
                 let iconClass;
-                const fileExtension = file.filename.split('.').pop().toLowerCase();
-        
-                switch (fileExtension) {
-                    case 'pdf':
-                        iconClass = 'ri-file-pdf-2-line'; 
-                        break;
-                    case 'zip':
-                    case 'rar':
-                    case '7z':
-                        iconClass = 'ri-file-zip-line'; 
-                        break;
-                    case 'doc':
-                    case 'docx':
-                        iconClass = 'ri-file-word-line'; 
-                        break;
-                    case 'xls':
-                    case 'xlsx':
-                        iconClass = 'ri-file-excel-line';
-                        break;
-                    case 'ppt':
-                    case 'pptx':
-                        iconClass = 'ri-file-ppt-line'; 
-                        break;
-                    default:
-                        iconClass = 'ri-file-line'; 
-                        break;
-                }
+                
+                const getIcon = getFileIconAndColor(file.file_type, file.filename);
+                iconClass = getIcon.icon;
         
                 const icon = document.createElement("i");
+                icon.style.color = getIcon.color;
                 icon.className = `${iconClass} display-3 me-2`; 
                 
                 newMessage.querySelector('.file-attachments').appendChild(fileAttachment);
@@ -803,35 +755,11 @@ function appendReply(message) {
                 const tooltip = new bootstrap.Tooltip(fileDownloadLink); 
 
                 let iconClass;
-                const fileExtension = file.filename.split('.').pop().toLowerCase();
-        
-                switch (fileExtension) {
-                    case 'pdf':
-                        iconClass = 'ri-file-pdf-2-line'; 
-                        break;
-                    case 'zip':
-                    case 'rar':
-                    case '7z':
-                        iconClass = 'ri-file-zip-line'; 
-                        break;
-                    case 'doc':
-                    case 'docx':
-                        iconClass = 'ri-file-word-line'; 
-                        break;
-                    case 'xls':
-                    case 'xlsx':
-                        iconClass = 'ri-file-excel-line';
-                        break;
-                    case 'ppt':
-                    case 'pptx':
-                        iconClass = 'ri-file-ppt-line'; 
-                        break;
-                    default:
-                        iconClass = 'ri-file-line'; 
-                        break;
-                }
+                const getIcon = getFileIconAndColor(file.file_type, file.filename);
+                iconClass = getIcon.icon;
         
                 const icon = document.createElement("i");
+                icon.style.color = getIcon.color;
                 icon.className = `${iconClass} display-3 me-2`; 
                 
                 newMessage.querySelector('.file-attachments').appendChild(fileAttachment);
@@ -1349,35 +1277,12 @@ function displayFilePreview(file, index) {
 
     } else {
         let iconClass;
-        const fileExtension = file.name.split('.').pop().toLowerCase();
 
-        switch (fileExtension) {
-            case 'pdf':
-                iconClass = 'ri-file-pdf-2-line'; 
-                break;
-            case 'zip':
-            case 'rar':
-            case '7z':
-                iconClass = 'ri-file-zip-line'; 
-                break;
-            case 'doc':
-            case 'docx':
-                iconClass = 'ri-file-word-line'; 
-                break;
-            case 'xls':
-            case 'xlsx':
-                iconClass = 'ri-file-excel-line';
-                break;
-            case 'ppt':
-            case 'pptx':
-                iconClass = 'ri-file-ppt-line'; 
-                break;
-            default:
-                iconClass = 'ri-file-line'; 
-                break;
-        }
+        const getIcon = getFileIconAndColor(file.type, file.name);
+        iconClass = getIcon.icon;
 
         const icon = document.createElement("i");
+        icon.style.color = getIcon.color;
         icon.className = `${iconClass} display-3 me-2`; 
         filePreviewContainer.appendChild(icon);
     }
@@ -1401,6 +1306,7 @@ function displayFilePreview(file, index) {
 
     fileAttachmentContainer.appendChild(filePreviewContainer);
     submitMessageButton.disabled = false; 
+    console.log(selectedFiles)
 }
 
 

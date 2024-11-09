@@ -8,7 +8,9 @@
 {% from "macros/workplaceModals.html" import deleteMessage_modal %}
 {% from "macros/sidebar.html" import workplace_sidebar %}
 {% from "macros/workplaceModals.html" import filePreviewModal %}
-
+{% from "macros/workplaceModals.html" import createTask_modal %}
+{% from "macros/workplaceModals.html" import submitTask_modal %}
+{% from "macros/workplaceModals.html" import deleteTask_modal %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -255,7 +257,7 @@
             <p class="fw-bold" id="channel-title" style="font-size: 18px; margin-bottom: 0px;"></p>
             <ul class="nav nav-underline">
                 <li class="nav-item">
-                  <a class="nav-link active link-dark channel-pages"  id="channel-messages" aria-current="page" href="#"><i class="ri-chat-3-fill"></i> Messages</a>
+                  <a class="nav-link link-dark channel-pages"  id="channel-messages" aria-current="page" href="#"><i class="ri-chat-3-fill"></i> Messages</a>
                 </li>
 
                 <li class="nav-item">
@@ -269,8 +271,10 @@
 
     <div class="workplace-content">
 
+        <div class="mb-5 channel-main" id="channel-home-content" style="display: none;"></div>
         <div class="mb-5 channel-main" id="channel-content" style="display: none;"></div>
         <div class="mb-5 channel-main" id="channel-file-content" style="display: none;"></div>
+        <div class="mb-5 channel-main" id="channel-task-content" style="display: none;"></div>
 
         <form id="messageForm" action="" enctype="multipart/form-data" method="POST" style="display: none;">
             <div class="message-container rounded-4 border">
@@ -326,13 +330,14 @@
 
 
 
-    
-
 
 
     {{ deleteMessage_modal() }}
     {{ filePreviewModal() }}
     {{ createLink_modal() }}
+    {{ createTask_modal(workplace_users) }}
+    {{ submitTask_modal() }}
+    {{ deleteTask_modal() }}
     {{ addEmployee_modal(workplace, non_employees) }}
     {{ createProject_modal(workplace) }}
     {{ code_modal(organization) }}
@@ -351,11 +356,16 @@
 
         let userReactions = {};
         let renderReply = false;
+        let taskFiles = [];
+        let taskIdToDelete = null;
 
 
         const channelMain = document.querySelectorAll('.channel-main');
         const channelContent = document.getElementById('channel-content');
         const channelFileContent = document.getElementById('channel-file-content');
+        const channelHomeContent = document.getElementById('channel-home-content');
+        const channelTaskContent = document.getElementById('channel-task-content');
+
         const workplaceInfo = document.getElementById('workplace-infoBar');
         const workplaceContent = document.querySelector('.workplace-content');
         const socket = io(); 
@@ -387,8 +397,7 @@
             
           
             document.getElementById('channel-title').innerHTML = document.querySelector('.tabActive').innerHTML;
-            document.querySelector('.tabActive').click();
-            workplaceInfo.querySelector('.active').click();     
+            document.querySelector('.tabActive').click();  
         };
 
         
@@ -396,6 +405,7 @@
  
         document.querySelectorAll('.channel-tab').forEach(tab => {
             const channelTitle = document.getElementById('channel-title');
+            const workplaceInfobarNav = document.querySelector('#workplace-infoBar .nav');
             tab.addEventListener('click', async (e) => {
 
                 //TODO: Further into the migration move the proprietary messaging clear functionality to the channel-page conditional statements
@@ -405,6 +415,10 @@
                 
                 if (typeof removeAllAttachments !== 'undefined' && typeof removeAllAttachments === 'function') {
                     removeAllAttachments();
+                }
+
+                if (typeof removeTaskFiles !== 'undefined' && typeof removeTaskFiles === 'function') {
+                    removeTaskFiles();
                 }
                 
                 editQuill = null;
@@ -433,26 +447,100 @@
                 conversationType = tab.getAttribute('data-conversation-type');
                 channelId = tab.getAttribute('data-channel-id');
 
+                const isAnnouncementsTab = conversationType === 'announcement';
+                const infobarHTML = isAnnouncementsTab ? `
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages"  id="channel-messages" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                    </li>
+                ` : `
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages"  id="channel-home" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-home-line"></i> Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages"  id="channel-messages"  href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages"  id="channel-tasks" href="#" style="color: var(--bs-change-color);"><i class="ri-stack-line"></i> Tasks</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                    </li>
+                `;
+
                 channelContent.innerHTML = '';
                 channelFileContent.innerHTML = '';
+                channelHomeContent.innerHTML = '';
+                channelTaskContent.innerHTML = '';
 
-                // FIXME: This is a temporary fix for the issue of the channel not reseting when a user clicks on a different channel (change to the first displyed child element)
-                document.getElementById('channel-messages').click();
+                workplaceInfobarNav.innerHTML = infobarHTML;    
+
+                workplaceInfobarNav.querySelectorAll('.channel-pages').forEach(page => {
+                    page.addEventListener('click', handlePageClick(page));
+                });
+        
+
+                const firstPage = workplaceInfobarNav.querySelector('.channel-pages');
+                if (firstPage) {
+                    firstPage.classList.add('active');
+                    firstPage.click(); 
+                }
             });
         });
 
 
-        document.querySelectorAll('.channel-pages').forEach(page => {
-            page.addEventListener('click', async (e) => {
+        const iconMappings = {
+            'ri-home-line': 'ri-home-fill',
+            'ri-chat-3-line': 'ri-chat-3-fill',
+            'ri-file-3-line': 'ri-file-3-fill',
+            'ri-stack-line': 'ri-stack-fill',
+            'ri-task-line': 'ri-task-fill'
+        };
+        
+
+        function handlePageClick(page) {
+            return async function(e) {
                 e.preventDefault();
                 const pageId = page.getAttribute('id');
                 const channelMessages = document.getElementById('channel-messages');
                 const channelFiles = document.getElementById('channel-files');
-                workplaceInfo.querySelector('.active').classList.remove('active');
+                
+                const previousActive = workplaceInfo.querySelector('.active');
+                if (previousActive) {
+                    previousActive.classList.remove('active');
+                    const previousIcon = previousActive.querySelector('i');
+                    if (previousIcon) {
+                        for (const [regular, filled] of Object.entries(iconMappings)) {
+                            if (previousIcon.classList.contains(filled)) {
+                                previousIcon.classList.remove(filled);
+                                previousIcon.classList.add(regular);
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 page.classList.add('active');
+                const icon = page.querySelector('i');
+                if (icon) {
+                    for (const [regular, filled] of Object.entries(iconMappings)) {
+                        if (icon.classList.contains(regular)) {
+                            icon.classList.remove(regular);
+                            icon.classList.add(filled);
+                            break;
+                        }
+                    }
+                }
+                
                 messageForm.style.display = 'none';
                 workplaceContent.style.height = 'calc(100vh - 150px)';
-
+        
                 channelMain.forEach(item => {
                     item.style.display = 'none';
                     item.innerHTML = '';
@@ -494,15 +582,31 @@
                     if (response.ok) {
                         const data = await response.json();
                         const files = data.files;
-                        console.log(files)
                         renderFiles(files);
                     } else {
                         console.error('Error fetching files:', response.statusText);
                         alert('Error fetching files');
                     }
+
+                } else if (pageId === 'channel-home') {
+                    channelHomeContent.style.display = 'block';
+
+
+                } else if (pageId === 'channel-tasks') {
+                    channelTaskContent.style.display = 'block';
+                    const response = await fetch(`/get_tasks_for_project/${channelId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const tasks = data.tasks;
+                        console.log(tasks)
+                        renderTasks(tasks);
+                    } else {
+                        console.error('Error fetching tasks:', response.statusText);
+                        alert('Error fetching tasks');
+                    }
                 }
-            });
-        });
+            };
+        }
 
 
         // Messaging Functionality Js
@@ -513,7 +617,12 @@
         {{ files_script | safe }}
         // File Functionality Js
 
+        // Task Functionality Js
+        {{ tasks_script | safe }}
+        // Task Functionality Js
 
+
+        
         $(document).ready(function() {
             $('#employeeSelect').select2({
                 dropdownParent: $('#addEmployeeModal'),
@@ -528,7 +637,7 @@
                 }
             });
         });
-        
+
 
         function collapseArrow() {
             const collapseButton = document.getElementById('content-collapse');
