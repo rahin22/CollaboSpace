@@ -83,7 +83,7 @@ class Task(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    updated_at = db.Column(db.DateTime, default=datetime.now())
 
     files = db.relationship('FileAttachment', backref='task', lazy=True)
     def to_dict(self):

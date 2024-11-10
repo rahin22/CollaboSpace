@@ -236,10 +236,106 @@
 {% endmacro %}
 
 
+{% macro projectSettings_modal() %}
+<!-- Project Settings Modal -->
+<div class="modal fade" id="projectSettingsModal" tabindex="-1" aria-labelledby="projectSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="projectSettingsForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectSettingsModalLabel">Project Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Project Name -->
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="projectName" name="project_name" value="" required oninput="limitWords(this, 25), checkProjectName()">
+                        <small id="project-feedback"></small>
+                    </div>
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="projectDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="projectDescription" name="description" rows="3" oninput="countWords(this, 120)"></textarea>
+                        <small class="text-muted">0/120 words</small>
+                    </div>
+                    <!-- End Date -->
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate" name="end_date" value="">
+                    </div>
+
+                    <!-- Delete Project Section -->
+                    <hr>
+                    <div class="delete-project-section">
+                        <h5 class="text-danger">Delete Project</h5>
+                        <p class="text-danger">Deleting this project will remove all associated data. This action cannot be undone.</p>
+                        <div class="mb-3">
+                            <label for="confirmProjectName" class="form-label">Enter Project Name to Confirm</label>
+                            <input type="text" class="form-control" id="confirmProjectName" name="confirm_project_name" placeholder="Project Name" required>
+                        </div>
+                        <button type="button" class="btn btn-danger" id="deleteProjectBtn">Delete Project</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" onclick="submitProjectSettings(event)" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endmacro %}
 
 
 
-
+{% macro projectStatus_modal() %}
+<!-- Project Status Modal -->
+<div class="modal fade" id="projectStatusModal" tabindex="-1" aria-labelledby="projectStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="projectStatusModalLabel">Update Project Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-status="Not Started">
+                        <div>
+                            <i class="ri-stop-circle-line text-secondary"></i>
+                            Not Started
+                        </div>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-status="In Progress">
+                        <div>
+                            <i class="ri-loader-2-line text-primary"></i>
+                            In Progress
+                        </div>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-status="Completed">
+                        <div>
+                            <i class="ri-checkbox-circle-line text-success"></i>
+                            Completed
+                        </div>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-status="On Hold">
+                        <div>
+                            <i class="ri-pause-circle-line text-warning"></i>
+                            On Hold
+                        </div>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-status="Cancelled">
+                        <div>
+                            <i class="ri-close-circle-line text-danger"></i>
+                            Cancelled
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
 
 
 

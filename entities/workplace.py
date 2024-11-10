@@ -10,6 +10,7 @@ from database.models import db, User, Role, Organization, Workplace, User_Workpl
 import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
+from datetime import date, datetime
 
 wrkplace = Blueprint('wrkplace', __name__)
 
@@ -210,3 +211,70 @@ def check_task(task_name, project_id):
     if existing_task:
         return jsonify({'available': False, 'message': 'Task already exists within this project'})
     return jsonify({'available': True, 'message': 'Task name is available'})
+
+
+@wrkplace.route('/get_project_home/<int:project_id>')
+def get_project_home(project_id):
+    project = Project.query.filter_by(id=project_id).first()
+    
+    # Get task statistics
+    tasks = Task.query.filter_by(project_id=project_id).all()
+    current_date = datetime.now()
+    print('current_date',current_date)
+
+    total_tasks = len(tasks)
+    completed_tasks = len([t for t in tasks if t.status == 'completed'])
+    in_progress_tasks = len([t for t in tasks if t.status == 'in_progress'])
+    overdue_tasks = [
+        {
+            'id': task.id,
+            'task_name': task.task_name,
+            'due_date': task.due_date.strftime('%Y-%m-%d %I:%M %p'),
+            'days_overdue': (current_date - task.due_date).days
+        }
+        for task in tasks 
+        if task.due_date and task.due_date < current_date and task.status != 'completed'
+    ]
+
+    upcoming_tasks = Task.query.filter(Task.project_id == project_id,Task.status != 'completed').order_by(Task.due_date.asc()).limit(3).all()
+    print('upcoming',upcoming_tasks)
+
+    
+    # Get recent activity
+    files = FileAttachment.query.filter_by(project_id=project_id).order_by(FileAttachment.created_at.desc()).limit(2).all()
+    conversation = Conversation.query.filter_by(project_id=project_id).first()
+    recent_messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.desc()).limit(2).all()
+    
+    # Get assigned team members
+    assigned_tasks = Task.query.filter(Task.project_id == project_id, Task.assigned_user_id.isnot(None)).all()
+    team_members = set(task.assigned_user_id for task in assigned_tasks)
+    
+    return jsonify({
+        'project': {
+            'id': project.id,
+            'name': project.project_name,
+            'description': project.description,
+            'status': project.status,
+            'created_at': project.created_at.strftime('%Y-%m-%d'),
+            'start_date': project.start_date.strftime('%Y-%m-%d') if project.start_date else None,
+            'end_date': project.end_date.strftime('%Y-%m-%d') if project.end_date else None
+        },
+        'task_stats': {
+            'total': total_tasks,
+            'completed': completed_tasks,
+            'in_progress': in_progress_tasks,
+            'pending': total_tasks - (completed_tasks + in_progress_tasks)
+        },
+        'overdue_tasks': overdue_tasks, 
+        'upcoming_tasks': [task.to_dict() for task in upcoming_tasks],
+        'recent_activity': {
+            'files': [file.to_dict() for file in files],
+            'messages': [msg.to_dict() for msg in recent_messages]
+        },
+        'team_stats': {
+            'total_members': len(team_members),
+            'members': list(team_members)
+        }
+    })
+    
+

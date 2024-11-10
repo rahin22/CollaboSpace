@@ -12,6 +12,7 @@ from entities.dashboard import dashboard as dash_bp
 from entities.workplace import wrkplace as wrk_bp
 from entities.messages import messages as msg_bp
 from entities.tasks import tasks as task_bp
+from entities.project import projects as proj_bp
 from datetime import datetime
 
 
@@ -82,6 +83,7 @@ app.register_blueprint(dash_bp)
 app.register_blueprint(wrk_bp)
 app.register_blueprint(msg_bp)
 app.register_blueprint(task_bp)
+app.register_blueprint(proj_bp)
 
 # Run the app
 if __name__ == '__main__':

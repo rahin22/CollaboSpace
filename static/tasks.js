@@ -1,342 +1,374 @@
-function renderTasks(tasks) {
+async function renderTasks(tasks, channelId) {
     channelTaskContent.innerHTML = '';
-    if (tasks.length === 0) {
+    const projectResponse = await fetch(`/get_project/${channelId}`);
+    if (!projectResponse.ok) {
+        console.error('Error fetching project:', projectResponse.statusText);
+        return;
+    }
+
+    const projectData = await projectResponse.json();
+    const isProjectActive = projectData.status === 'In Progress';
+
+    if (!isProjectActive) {
         const noTasksDiv = document.createElement('div');
-        noTasksDiv.classList.add('no-tasks', 'text-center', 'mt-4');
-
-        const message = document.createElement('p');
-        message.textContent = 'No tasks created yet, click below to get started.';
-        message.classList.add('lead');
-        noTasksDiv.appendChild(message);
-
-        const createButton = document.createElement('button');
-        createButton.textContent = 'Create New Task';
-        createButton.classList.add('btn', 'btn-primary', 'mt-2');
-        createButton.addEventListener('click', () => {
-            const taskDeadlineInput = document.getElementById('taskDeadline');
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
-            taskDeadlineInput.min = formattedNow;
-            showModal(createTaskModal);
-        });
-        noTasksDiv.appendChild(createButton);
-
-        channelTaskContent.appendChild(noTasksDiv);
-    } else {
-        const headerDiv = document.createElement('div');
-        headerDiv.classList.add('d-flex', 'justify-content-center', 'align-items-center', 'm-2');
-        const addtask = document.createElement('h5');
-        addtask.classList.add('mb-3', 'text-center', 'add-task-button');
-        addtask.innerHTML = 'Add Task <i class="ri-add-fill"></i>';
-
-        addtask.onclick = () => {
-            const taskDeadlineInput = document.getElementById('taskDeadline');
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
-            taskDeadlineInput.min = formattedNow;
-            showModal(createTaskModal);
-        };
-
-        channelTaskContent.appendChild(headerDiv);
-        headerDiv.appendChild(addtask);
-
-        // Split tasks into urgent (including overdue), regular, and completed
-        const now = new Date();
-        const fiveDaysFromNow = new Date();
-        fiveDaysFromNow.setDate(now.getDate() + 5);
-
-        const urgentTasks = tasks.filter(task => {
-            const dueDate = new Date(task.due_date);
-            return dueDate <= fiveDaysFromNow && task.status !== 'completed'; 
-        });
-
-        const otherTasks = tasks.filter(task => {
-            const dueDate = new Date(task.due_date);
-            return dueDate > fiveDaysFromNow && task.status !== 'completed';
-        });
-
-        const completedTasks = tasks.filter(task => task.status === 'completed');
+        const warningDiv = document.createElement('div');
+        warningDiv.classList.add('alert', 'alert-warning', 'mb-4');
         
+        const icon = document.createElement('i');
+        icon.classList.add('ri-error-warning-line', 'me-2');
+        
+        const heading = document.createElement('h5');
+        heading.classList.add('alert-heading');
+        heading.appendChild(icon);
+        heading.appendChild(document.createTextNode(`Project ${projectData.status}`));
+        
+        const text = document.createElement('p');
+        text.classList.add('mb-0');
+        text.textContent = `Tasks cannot be created while the project is ${projectData.status.toLowerCase()}.`;
+        
+        warningDiv.appendChild(heading);
+        warningDiv.appendChild(text);
+        noTasksDiv.appendChild(warningDiv);
+        channelTaskContent.appendChild(noTasksDiv);
+    }else {
+        if (tasks.length === 0) {
+            const noTasksDiv = document.createElement('div');
+            noTasksDiv.classList.add('no-tasks', 'text-center', 'mt-4');
 
-        // Function to create accordion
-        const createAccordion = (tasksList, accordionId, headerText) => {
-            const accordion = document.createElement('div');
-            accordion.classList.add('accordion', 'mb-4');
-            accordion.id = accordionId;
+            const message = document.createElement('p');
+            message.textContent = 'No tasks created yet, click below to get started.';
+            message.classList.add('lead');
+            noTasksDiv.appendChild(message);
 
-            const header = document.createElement('h5');
-            header.classList.add('mb-3');
-            header.textContent = headerText;
-            channelTaskContent.appendChild(header);
+            const createButton = document.createElement('button');
+            createButton.textContent = 'Create New Task';
+            createButton.classList.add('btn', 'btn-primary', 'mt-2');
+            createButton.addEventListener('click', () => {
+                const taskDeadlineInput = document.getElementById('taskDeadline');
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+                taskDeadlineInput.min = formattedNow;
+                showModal(createTaskModal);
+            });
+            noTasksDiv.appendChild(createButton);
 
-            tasksList.forEach((task, index) => {
-                const taskId = task.id || index;
+            channelTaskContent.appendChild(noTasksDiv);
+        } else {
+            const headerDiv = document.createElement('div');
+            headerDiv.classList.add('d-flex', 'justify-content-center', 'align-items-center', 'm-2');
+            const addtask = document.createElement('h5');
+            addtask.classList.add('mb-3', 'text-center', 'add-task-button');
+            addtask.innerHTML = 'Add Task <i class="ri-add-fill"></i>';
 
-                // Accordion Item
-                const accordionItem = document.createElement('div');
-                accordionItem.classList.add('accordion-item');
-                accordionItem.id = `task-${taskId}-accordion-item`;
+            addtask.onclick = () => {
+                const taskDeadlineInput = document.getElementById('taskDeadline');
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+                taskDeadlineInput.min = formattedNow;
+                showModal(createTaskModal);
+            };
 
-                // Accordion Header
-                const accordionHeader = document.createElement('h2');
-                accordionHeader.classList.add('accordion-header');
-                accordionHeader.id = `task-${taskId}-header`;
+            channelTaskContent.appendChild(headerDiv);
+            headerDiv.appendChild(addtask);
 
-                const accordionButton = document.createElement('button');
-                const formattedTimestamp = formatTimestamp(task.due_date, 'MMM D, YYYY, h:mm A');
-                accordionButton.classList.add('accordion-button', 'collapsed');
-                accordionButton.type = 'button';
-                accordionButton.setAttribute('data-bs-toggle', 'collapse');
-                accordionButton.setAttribute('data-bs-target', `#task-${taskId}-collapse`);
-                accordionButton.setAttribute('aria-expanded', 'false');
-                accordionButton.setAttribute('aria-controls', `task-${taskId}-collapse`);
+            // Split tasks into urgent (including overdue), regular, and completed
+            const now = new Date();
+            const fiveDaysFromNow = new Date();
+            fiveDaysFromNow.setDate(now.getDate() + 5);
 
-                const accordionButtonInner = document.createElement('div');
-                accordionButtonInner.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'w-100', 'p-1');
-
-                const statusIconClasses = {   
-                    in_progress: 'text-warning',    
-                    completed: 'text-success' 
-                };
-
-                const icon = document.createElement('i');
-                icon.classList.add('ri-list-check-3', statusIconClasses[task.status]);
-
-                const taskNameSpan = document.createElement('span');
-                taskNameSpan.classList.add('fw-bold');
-                taskNameSpan.appendChild(icon);
-                taskNameSpan.insertAdjacentText('beforeend', ` ${task.task_name}`);
-
-                const dueDateSpan = document.createElement('span');
-                dueDateSpan.classList.add('small');
-
+            const urgentTasks = tasks.filter(task => {
                 const dueDate = new Date(task.due_date);
-                if (dueDate < now && task.status !== 'completed') {
-                    dueDateSpan.classList.add('text-danger');
-                    dueDateSpan.textContent = `Overdue: ${formattedTimestamp}`;
-                } else {
-                    dueDateSpan.classList.add('text-muted');
-                    dueDateSpan.textContent = `Due: ${formattedTimestamp}`;
-                }
-
-                accordionButton.appendChild(accordionButtonInner);
-                accordionButtonInner.appendChild(taskNameSpan);
-                accordionButtonInner.appendChild(dueDateSpan);
-
-                accordionHeader.appendChild(accordionButton);
-                accordionItem.appendChild(accordionHeader);
-
-                // Accordion Body
-                const accordionCollapse = document.createElement('div');
-                accordionCollapse.id = `task-${taskId}-collapse`;
-                accordionCollapse.classList.add('accordion-collapse', 'collapse');
-                accordionCollapse.setAttribute('aria-labelledby', `task-${taskId}-header`);
-                accordionCollapse.setAttribute('data-bs-parent', `#${accordionId}`);
-
-                const accordionBody = document.createElement('div');
-                accordionBody.classList.add('accordion-body');
-                accordionBody.style.position = 'relative';
-
-                // Dropdown Menu for Task Actions
-                const dropdownDiv = document.createElement('div');
-                dropdownDiv.classList.add('dropdown');
-                dropdownDiv.style.position = 'absolute';
-                dropdownDiv.style.top = '10px';
-                dropdownDiv.style.right = '10px';
-
-                const dropdownToggle = document.createElement('button');
-                dropdownToggle.classList.add('btn','btn-sm', 'p-1', 'fs-5');
-                dropdownToggle.setAttribute('type', 'button');
-                dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
-                dropdownToggle.setAttribute('aria-expanded', 'false');
-                dropdownToggle.innerHTML = '<i class="ri-more-2-fill"></i>'; 
-
-                const dropdownMenu = document.createElement('ul');
-                dropdownMenu.classList.add('dropdown-menu');
-
-
-                const deleteTaskItem = document.createElement('li');
-                const deleteTaskLink = document.createElement('a');
-                deleteTaskLink.classList.add('dropdown-item');
-                deleteTaskLink.href = '#';
-                deleteTaskLink.innerHTML = '<i class="ri-delete-bin-2-fill text-danger"></i> Delete Task';
-                
-                deleteTaskLink.onclick = () => {
-                    taskIdToDelete = taskId;
-                    document.getElementById('deleteTaskModalLabel').textContent = `Delete Task: ${task.task_name}`;
-                    showModal(deleteTaskModal);
-                };
-
-                deleteTaskItem.appendChild(deleteTaskLink);
-                dropdownMenu.appendChild(deleteTaskItem);
-
-                dropdownDiv.appendChild(dropdownToggle);
-                dropdownDiv.appendChild(dropdownMenu);
-
-                accordionBody.appendChild(dropdownDiv);
-
-                // Task Description
-                const taskDescriptionLabel = document.createElement('p');
-                taskDescriptionLabel.textContent = 'Description:';
-                taskDescriptionLabel.classList.add('fw-bold');
-                accordionBody.appendChild(taskDescriptionLabel);
-
-                const taskDescription = document.createElement('p');
-                taskDescription.textContent = task.description;
-                taskDescription.classList.add('card-text', 'text-muted');
-                accordionBody.appendChild(taskDescription);
-
-                // Timeline Section
-                const timelineDiv = document.createElement('div');
-                timelineDiv.id = `task-${taskId}-timeline`;
-                timelineDiv.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'my-4');
-
-                const statuses = ['Not Started', 'In Progress', 'Completed'];
-                const statusClasses = {
-                    not_started: ['bg-primary', 'text-white'],
-                    in_progress: ['bg-warning', 'text-dark'],
-                    completed: ['bg-success', 'text-white']
-                };
-
-                const currentStatus = task.status; 
-
-                statuses.forEach((status, idx) => {
-                    const node = document.createElement('div');
-                    node.classList.add('d-flex', 'flex-column', 'align-items-center');
-
-                    const circle = document.createElement('div');
-                    circle.classList.add('rounded-circle', 'mb-2');
-                    circle.style.width = '20px';
-                    circle.style.height = '20px';
-                    circle.classList.add('d-flex', 'justify-content-center', 'align-items-center', 'border');
-
-                    const label = document.createElement('span');
-                    label.classList.add('small');
-                    label.textContent = status;
-
-                    if (currentStatus === 'not_started' && idx === 0) {
-                        circle.classList.add(...statusClasses.not_started);
-                    } else if (currentStatus === 'in_progress' && idx <= 1) {
-                        circle.classList.add(...statusClasses.in_progress);
-                    } else if (currentStatus === 'completed' && idx <= 2) {
-                        circle.classList.add(...statusClasses.completed);
-                    } else {
-                        circle.classList.add('bg-light', 'text-muted');
-                    }
-
-                    node.appendChild(circle);
-                    node.appendChild(label);
-                    timelineDiv.appendChild(node);
-
-                    if (idx < statuses.length - 1) {
-                        const connector = document.createElement('div');
-                        connector.style.flexGrow = '1';
-                        connector.style.height = '2px';
-                        connector.classList.add('mx-2');
-
-                        if (currentStatus === 'in_progress') {
-                            if (idx === 0) {
-                                connector.classList.add('bg-warning'); 
-                            } else {
-                                connector.classList.add('bg-secondary');
-                            }
-                        } else if (currentStatus === 'completed') {
-                            connector.classList.add('bg-success');
-                        } else {
-                            connector.classList.add('bg-secondary'); 
-                        }
-
-                        timelineDiv.appendChild(connector);
-                    }
-                });
-
-                accordionBody.appendChild(timelineDiv);
-
-                // File Upload Section
-                const fileUploadDiv = document.createElement('div');
-                fileUploadDiv.id = `task-${taskId}-file-upload`;
-                fileUploadDiv.classList.add('d-flex', 'flex-row', 'flex-wrap', 'gap-2', 'mt-3', 'mb-3', 'w-100');
-
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.id = `task-${taskId}-file`; 
-                fileInput.style.display = 'none';
-
-                const addFileButton = document.createElement('button');
-                addFileButton.classList.add('btn', 'btn-sm', 'btn-outline-primary', 'mt-2');
-                addFileButton.id = `task-${taskId}-add-file-button`;
-                addFileButton.textContent = 'Add Files';
-                addFileButton.onclick = () => {
-                    fileInput.click();
-                };
-
-                if (currentStatus === 'completed') {
-                    addFileButton.disabled = true;
-                }
-
-                fileUploadDiv.appendChild(fileInput);
-                accordionBody.appendChild(addFileButton);
-                accordionBody.appendChild(fileUploadDiv);
-
-                // Conditional Submit/Unsubmit Button
-                if (currentStatus === 'completed') {
-                    const unsubmitButton = document.createElement('button');
-                    unsubmitButton.id = `submitTaskButton-${taskId}`;
-                    unsubmitButton.classList.add('btn', 'btn-warning', 'mt-2', 'w-100');
-                    unsubmitButton.textContent = 'Unsubmit';
-                    unsubmitButton.onclick = () => handleUnsubmitClick(taskId);
-                    accordionBody.appendChild(unsubmitButton);
-                } else {
-                    const submitButton = document.createElement('button');
-                    submitButton.id = `submitTaskButton-${taskId}`;
-                    submitButton.classList.add('btn', 'btn-success', 'mt-2', 'w-100');
-                    submitButton.textContent = 'Submit';
-                    submitButton.onclick = () => handleSubmitClick(taskId);
-                    accordionBody.appendChild(submitButton);
-                }
-
-                accordionCollapse.appendChild(accordionBody);
-                accordionItem.appendChild(accordionCollapse);
-                accordion.appendChild(accordionItem);
-
-                fileInput.onchange = (event) => handleTaskFileSelect(event, taskId);
+                return dueDate <= fiveDaysFromNow && task.status !== 'completed'; 
             });
 
-            channelTaskContent.appendChild(accordion);
-        };
+            const otherTasks = tasks.filter(task => {
+                const dueDate = new Date(task.due_date);
+                return dueDate > fiveDaysFromNow && task.status !== 'completed';
+            });
 
-        // Create Urgent Tasks Accordion 
-        if (urgentTasks.length > 0) {
-            createAccordion(urgentTasks, 'urgentTasksAccordion', 'Urgent Tasks');
-        }
+            const completedTasks = tasks.filter(task => task.status === 'completed');
+            
 
-        // Create Regular Tasks Accordion
-        if (otherTasks.length > 0) {
-            createAccordion(otherTasks, 'regularTasksAccordion', 'Regular Tasks');
-        }
+            // Function to create accordion
+            const createAccordion = (tasksList, accordionId, headerText) => {
+                const accordion = document.createElement('div');
+                accordion.classList.add('accordion', 'mb-4');
+                accordion.id = accordionId;
 
-        // Create Completed Tasks Accordion
-        if (completedTasks.length > 0) {
-            createAccordion(completedTasks, 'completedTasksAccordion', 'Completed Tasks');
-        }
+                const header = document.createElement('h5');
+                header.classList.add('mb-3');
+                header.textContent = headerText;
+                channelTaskContent.appendChild(header);
 
-        tasks.forEach(task => {
-            if (task.files && task.files.length > 0) {
-                task.files.forEach(file => {
-                    displayTaskFiles(file, task.id, task.status);
+                tasksList.forEach((task, index) => {
+                    const taskId = task.id || index;
+
+                    // Accordion Item
+                    const accordionItem = document.createElement('div');
+                    accordionItem.classList.add('accordion-item');
+                    accordionItem.id = `task-${taskId}-accordion-item`;
+
+                    // Accordion Header
+                    const accordionHeader = document.createElement('h2');
+                    accordionHeader.classList.add('accordion-header');
+                    accordionHeader.id = `task-${taskId}-header`;
+
+                    const accordionButton = document.createElement('button');
+                    const formattedTimestamp = formatTimestamp(task.due_date, 'MMM D, YYYY, h:mm A');
+                    accordionButton.classList.add('accordion-button', 'collapsed');
+                    accordionButton.type = 'button';
+                    accordionButton.setAttribute('data-bs-toggle', 'collapse');
+                    accordionButton.setAttribute('data-bs-target', `#task-${taskId}-collapse`);
+                    accordionButton.setAttribute('aria-expanded', 'false');
+                    accordionButton.setAttribute('aria-controls', `task-${taskId}-collapse`);
+
+                    const accordionButtonInner = document.createElement('div');
+                    accordionButtonInner.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'w-100', 'p-1');
+
+                    const statusIconClasses = {   
+                        in_progress: 'text-primary',    
+                        completed: 'text-success' 
+                    };
+
+                    const icon = document.createElement('i');
+                    icon.classList.add('ri-list-check-3', statusIconClasses[task.status]);
+
+                    const taskNameSpan = document.createElement('span');
+                    taskNameSpan.classList.add('fw-bold');
+                    taskNameSpan.appendChild(icon);
+                    taskNameSpan.insertAdjacentText('beforeend', ` ${task.task_name}`);
+
+                    const dueDateSpan = document.createElement('span');
+                    dueDateSpan.classList.add('small');
+
+                    const dueDate = new Date(task.due_date);
+                    if (dueDate < now && task.status !== 'completed') {
+                        dueDateSpan.classList.add('text-danger');
+                        dueDateSpan.textContent = `Overdue: ${formattedTimestamp}`;
+                    } else {
+                        dueDateSpan.classList.add('text-muted');
+                        dueDateSpan.textContent = `Due: ${formattedTimestamp}`;
+                    }
+
+                    accordionButton.appendChild(accordionButtonInner);
+                    accordionButtonInner.appendChild(taskNameSpan);
+                    accordionButtonInner.appendChild(dueDateSpan);
+
+                    accordionHeader.appendChild(accordionButton);
+                    accordionItem.appendChild(accordionHeader);
+
+                    // Accordion Body
+                    const accordionCollapse = document.createElement('div');
+                    accordionCollapse.id = `task-${taskId}-collapse`;
+                    accordionCollapse.classList.add('accordion-collapse', 'collapse');
+                    accordionCollapse.setAttribute('aria-labelledby', `task-${taskId}-header`);
+                    accordionCollapse.setAttribute('data-bs-parent', `#${accordionId}`);
+
+                    const accordionBody = document.createElement('div');
+                    accordionBody.classList.add('accordion-body');
+                    accordionBody.style.position = 'relative';
+
+                    // Dropdown Menu for Task Actions
+                    const dropdownDiv = document.createElement('div');
+                    dropdownDiv.classList.add('dropdown');
+                    dropdownDiv.style.position = 'absolute';
+                    dropdownDiv.style.top = '10px';
+                    dropdownDiv.style.right = '10px';
+
+                    const dropdownToggle = document.createElement('button');
+                    dropdownToggle.classList.add('btn','btn-sm', 'p-1', 'fs-5');
+                    dropdownToggle.setAttribute('type', 'button');
+                    dropdownToggle.setAttribute('data-bs-toggle', 'dropdown');
+                    dropdownToggle.setAttribute('aria-expanded', 'false');
+                    dropdownToggle.innerHTML = '<i class="ri-more-2-fill"></i>'; 
+
+                    const dropdownMenu = document.createElement('ul');
+                    dropdownMenu.classList.add('dropdown-menu');
+
+
+                    const deleteTaskItem = document.createElement('li');
+                    const deleteTaskLink = document.createElement('a');
+                    deleteTaskLink.classList.add('dropdown-item');
+                    deleteTaskLink.href = '#';
+                    deleteTaskLink.innerHTML = '<i class="ri-delete-bin-2-fill text-danger"></i> Delete Task';
+                    
+                    deleteTaskLink.onclick = () => {
+                        taskIdToDelete = taskId;
+                        document.getElementById('deleteTaskModalLabel').textContent = `Delete Task: ${task.task_name}`;
+                        showModal(deleteTaskModal);
+                    };
+
+                    deleteTaskItem.appendChild(deleteTaskLink);
+                    dropdownMenu.appendChild(deleteTaskItem);
+
+                    dropdownDiv.appendChild(dropdownToggle);
+                    dropdownDiv.appendChild(dropdownMenu);
+
+                    accordionBody.appendChild(dropdownDiv);
+
+                    // Task Description
+                    const taskDescriptionLabel = document.createElement('p');
+                    taskDescriptionLabel.textContent = 'Description:';
+                    taskDescriptionLabel.classList.add('fw-bold');
+                    accordionBody.appendChild(taskDescriptionLabel);
+
+                    const taskDescription = document.createElement('p');
+                    taskDescription.textContent = task.description;
+                    taskDescription.classList.add('card-text', 'text-muted');
+                    accordionBody.appendChild(taskDescription);
+
+                    // Timeline Section
+                    const timelineDiv = document.createElement('div');
+                    timelineDiv.id = `task-${taskId}-timeline`;
+                    timelineDiv.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'my-4');
+
+                    const statuses = ['Not Started', 'In Progress', 'Completed'];
+                    const statusClasses = {
+                        not_started: ['bg-secondary', 'text-white'],
+                        in_progress: ['bg-primary', 'text-dark'],
+                        completed: ['bg-success', 'text-white']
+                    };
+
+                    const currentStatus = task.status; 
+
+                    statuses.forEach((status, idx) => {
+                        const node = document.createElement('div');
+                        node.classList.add('d-flex', 'flex-column', 'align-items-center');
+
+                        const circle = document.createElement('div');
+                        circle.classList.add('rounded-circle', 'mb-2');
+                        circle.style.width = '20px';
+                        circle.style.height = '20px';
+                        circle.classList.add('d-flex', 'justify-content-center', 'align-items-center', 'border');
+
+                        const label = document.createElement('span');
+                        label.classList.add('small');
+                        label.textContent = status;
+
+                        if (currentStatus === 'not_started' && idx === 0) {
+                            circle.classList.add(...statusClasses.not_started);
+                        } else if (currentStatus === 'in_progress' && idx <= 1) {
+                            circle.classList.add(...statusClasses.in_progress);
+                        } else if (currentStatus === 'completed' && idx <= 2) {
+                            circle.classList.add(...statusClasses.completed);
+                        } else {
+                            circle.classList.add('bg-light', 'text-muted');
+                        }
+
+                        node.appendChild(circle);
+                        node.appendChild(label);
+                        timelineDiv.appendChild(node);
+
+                        if (idx < statuses.length - 1) {
+                            const connector = document.createElement('div');
+                            connector.style.flexGrow = '1';
+                            connector.style.height = '2px';
+                            connector.classList.add('mx-2');
+
+                            if (currentStatus === 'in_progress') {
+                                if (idx === 0) {
+                                    connector.classList.add('bg-primary'); 
+                                } else {
+                                    connector.classList.add('bg-secondary');
+                                }
+                            } else if (currentStatus === 'completed') {
+                                connector.classList.add('bg-success');
+                            } else {
+                                connector.classList.add('bg-secondary'); 
+                            }
+
+                            timelineDiv.appendChild(connector);
+                        }
+                    });
+
+                    accordionBody.appendChild(timelineDiv);
+
+                    // File Upload Section
+                    const fileUploadDiv = document.createElement('div');
+                    fileUploadDiv.id = `task-${taskId}-file-upload`;
+                    fileUploadDiv.classList.add('d-flex', 'flex-row', 'flex-wrap', 'gap-2', 'mt-3', 'mb-3', 'w-100');
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.id = `task-${taskId}-file`; 
+                    fileInput.style.display = 'none';
+
+                    const addFileButton = document.createElement('button');
+                    addFileButton.classList.add('btn', 'btn-sm', 'btn-outline-primary', 'mt-2');
+                    addFileButton.id = `task-${taskId}-add-file-button`;
+                    addFileButton.textContent = 'Add Files';
+                    addFileButton.onclick = () => {
+                        fileInput.click();
+                    };
+
+                    if (currentStatus === 'completed') {
+                        addFileButton.disabled = true;
+                    }
+
+                    fileUploadDiv.appendChild(fileInput);
+                    accordionBody.appendChild(addFileButton);
+                    accordionBody.appendChild(fileUploadDiv);
+
+                    // Conditional Submit/Unsubmit Button
+                    if (currentStatus === 'completed') {
+                        const unsubmitButton = document.createElement('button');
+                        unsubmitButton.id = `submitTaskButton-${taskId}`;
+                        unsubmitButton.classList.add('btn', 'btn-warning', 'mt-2', 'w-100');
+                        unsubmitButton.textContent = 'Unsubmit';
+                        unsubmitButton.onclick = () => handleUnsubmitClick(taskId);
+                        accordionBody.appendChild(unsubmitButton);
+                    } else {
+                        const submitButton = document.createElement('button');
+                        submitButton.id = `submitTaskButton-${taskId}`;
+                        submitButton.classList.add('btn', 'btn-success', 'mt-2', 'w-100');
+                        submitButton.textContent = 'Submit';
+                        submitButton.onclick = () => handleSubmitClick(taskId);
+                        accordionBody.appendChild(submitButton);
+                    }
+
+                    accordionCollapse.appendChild(accordionBody);
+                    accordionItem.appendChild(accordionCollapse);
+                    accordion.appendChild(accordionItem);
+
+                    fileInput.onchange = (event) => handleTaskFileSelect(event, taskId);
                 });
+
+                channelTaskContent.appendChild(accordion);
+            };
+
+            // Create Urgent Tasks Accordion 
+            if (urgentTasks.length > 0) {
+                createAccordion(urgentTasks, 'urgentTasksAccordion', 'Urgent Tasks');
             }
-        });
+
+            // Create Regular Tasks Accordion
+            if (otherTasks.length > 0) {
+                createAccordion(otherTasks, 'regularTasksAccordion', 'Regular Tasks');
+            }
+
+            // Create Completed Tasks Accordion
+            if (completedTasks.length > 0) {
+                createAccordion(completedTasks, 'completedTasksAccordion', 'Completed Tasks');
+            }
+
+            tasks.forEach(task => {
+                if (task.files && task.files.length > 0) {
+                    task.files.forEach(file => {
+                        displayTaskFiles(file, task.id, task.status);
+                    });
+                }
+            });
+        }
     }
 }
 
@@ -575,8 +607,6 @@ function displayTaskFiles(file, taskId, taskStatus) {
 
     fileDiv.appendChild(fileHeader);
     fileDiv.appendChild(removeFileButton);
-    console.log(fileDiv)
-    console.log(fileUploadDiv)
     fileUploadDiv.appendChild(fileDiv);
 }
 
@@ -584,7 +614,6 @@ function displayTaskFiles(file, taskId, taskStatus) {
 socket.on('delete_file_response', (data) => {
     if (data.status === 'success') {
         const fileDiv = document.getElementById(`task-file-${data.file_id}`);
-        console.log(fileDiv)
         if (fileDiv) {
             fileDiv.remove();
         }
@@ -620,8 +649,8 @@ function updateTaskStatus(taskId, status) {
     const currentStatusIndex = statuses.indexOf(status);
 
     const statusClasses = {
-        not_started: ['bg-primary', 'text-white'],
-        in_progress: ['bg-warning', 'text-dark'],
+        not_started: ['bg-secondary', 'text-white'],
+        in_progress: ['bg-primary', 'text-dark'],
         completed: ['bg-success', 'text-white']
     };
 
@@ -639,7 +668,7 @@ function updateTaskStatus(taskId, status) {
     connectors.forEach((connector, idx) => {
         if (idx < currentStatusIndex) {
             if (status === 'in_progress') {
-                connector.className = 'mx-2 bg-warning';
+                connector.className = 'mx-2 bg-primary';
             } else if (status === 'completed') {
                 connector.className = 'mx-2 bg-success';
             }

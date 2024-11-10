@@ -135,6 +135,7 @@ def handle_update_task_status(data):
         return
 
     task.status = new_status
+    task.updated_at = datetime.now()
     try:
         db.session.commit()
         socketio.emit('update_task_status_response', {
@@ -166,7 +167,7 @@ def handle_delete_task(data):
         return
     try:
         task_files = FileAttachment.query.filter_by(task_id=task_id).all()
-        
+
         for file in task_files:
             db.session.delete(file)
             if FileAttachment.query.filter_by(file_path=file.file_path).count() == 0:

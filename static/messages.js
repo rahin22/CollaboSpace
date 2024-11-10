@@ -810,7 +810,6 @@ function deleteMessage(messageId) {
     document.getElementById('confirmDeleteButton').onclick = function () {
         messageToDelete.remove();
         socket.emit('delete_message', { message_id: messageId, conversation_id: currentConversationId });
-        deleteMessageModal.hide();
     };
 }
 
