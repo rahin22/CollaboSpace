@@ -249,14 +249,14 @@
                 <div class="modal-body">
                     <!-- Project Name -->
                     <div class="mb-3">
-                        <label for="projectName" class="form-label">Project Name</label>
-                        <input type="text" class="form-control" id="projectName" name="project_name" value="" required oninput="limitWords(this, 25), checkProjectName()">
-                        <small id="project-feedback"></small>
+                        <label for="projectSettingsName" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="projectSettingsName" name="project_name" value="" required oninput="limitWords(this, 25), checkProjectSettingsName() ">
+                        <small id="project-settings-feedback"></small>
                     </div>
                     <!-- Description -->
                     <div class="mb-3">
-                        <label for="projectDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="projectDescription" name="description" rows="3" oninput="countWords(this, 120)"></textarea>
+                        <label for="projectSettingsDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="projectSettingsDescription" name="description" rows="3" oninput="countWords(this, 120)"></textarea>
                         <small class="text-muted">0/120 words</small>
                     </div>
                     <!-- End Date -->
@@ -274,12 +274,12 @@
                             <label for="confirmProjectName" class="form-label">Enter Project Name to Confirm</label>
                             <input type="text" class="form-control" id="confirmProjectName" name="confirm_project_name" placeholder="Project Name" required>
                         </div>
-                        <button type="button" class="btn btn-danger" id="deleteProjectBtn">Delete Project</button>
+                        <button type="button" class="btn btn-danger" id="deleteProjectBtn" onclick="deleteProject()">Delete Project</button>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" onclick="submitProjectSettings(event)" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" id="projectSettingsSubmit" onclick="submitProjectSettings(event)" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -290,7 +290,6 @@
 
 
 {% macro projectStatus_modal() %}
-<!-- Project Status Modal -->
 <div class="modal fade" id="projectStatusModal" tabindex="-1" aria-labelledby="projectStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -339,5 +338,42 @@
 
 
 
-
-
+{% macro removeEmployee_modal(workplace_users, workplace) %}
+<div class="modal fade" id="removeEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Employees</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="removeEmployeeForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Employees to Remove</label>
+                        <div class="list-group" id="employeeRemoveList">
+                            {% for user in workplace_users %}
+                                {% if user.user.id != workplace.workplace_manager %}
+                                    <label class="list-group-item d-flex align-items-center">
+                                        <input class="form-check-input me-3" type="checkbox" value="{{ user.user.id }}">
+                                        <img src="data:image/png;base64,{{ user.user.pfp | b64encode }}" 
+                                             class="rounded-circle me-2" width="32" height="32">
+                                        <div>
+                                            <h6 class="mb-0">{{ user.user.first_name }} {{ user.user.last_name }}</h6>
+                                            <small class="text-muted">@{{ user.user.username }}</small>
+                                        </div>
+                                    </label>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="ri-user-unfollow-line me-2"></i>Remove Selected
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

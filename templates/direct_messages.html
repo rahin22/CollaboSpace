@@ -1,0 +1,37 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+{% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
+{% from "macros/sidebar.html" import user_sidebar %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{ head_imports() }}
+    <title>Direct Messages</title>
+    <style>
+        .logo-fill {
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1 {
+            height: 35px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--bs-body-bg);;
+        }
+    </style>
+</head>
+
+<body>
+    {{ user_sidebar(organization, current_user, svg_logo) }}
+
+    {{ bootstrap_scripts() }}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

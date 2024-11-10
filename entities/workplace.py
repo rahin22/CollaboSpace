@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request, jsonify, abort
+from extensions import socketio 
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, DateField, SelectField, EmailField
@@ -11,6 +12,7 @@ import os, random
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
 from datetime import date, datetime
+from flask_socketio import SocketIO, join_room
 
 wrkplace = Blueprint('wrkplace', __name__)
 
@@ -35,12 +37,17 @@ def adminWorkplace(workplace_id):
     workplace_user_ids = {uw.user_id for uw in workplace_users}
     all_employees = Employee_Info.query.filter_by(organization_id=organization.id).all()
     non_employees = [employee for employee in all_employees if employee.user_id not in workplace_user_ids]
+    
+    active_tasks = Task.query.join(Project, Task.project_id == Project.id).filter( Project.workplace_id == workplace_id, Task.status == 'in_progress').all()
+
+    admin_id = organization.admin_id
+    manager_id = workplace.workplace_manager
 
 
-    if current_user.id != organization.admin_id:
+    if current_user.id != organization.admin_id and current_user.id != workplace.workplace_manager:
         abort(403)  
 
-    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script, tasks_script=tasks_script, home_script=home_script, workplace_users=workplace_users)
+    return render_template('adminWorkplace.html', workplace=workplace, employees=employees, admin_id=admin_id, manager_id=manager_id, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script, tasks_script=tasks_script, home_script=home_script, workplace_users=workplace_users, active_tasks=active_tasks)
 
 
 @wrkplace.route('/user_workplace/<int:workplace_id>')
@@ -60,11 +67,16 @@ def workplace(workplace_id):
     all_employees = Employee_Info.query.filter_by(organization_id=organization.id).all()
     non_employees = [employee for employee in all_employees if employee.user_id not in workplace_user_ids]
 
+    active_tasks = Task.query.join(Project, Task.project_id == Project.id).filter( Project.workplace_id == workplace_id, Task.status == 'in_progress').all()
 
-    if current_user.id != organization.admin_id:
-        abort(403)  
+    admin_id = organization.admin_id
+    manager_id = workplace.workplace_manager
 
-    return render_template('workplace.html', workplace=workplace, employees=employees, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script, tasks_script=tasks_script, home_script=home_script, workplace_users=workplace_users)
+
+    if (current_user.id not in workplace_user_ids or current_user.id == organization.admin_id or  current_user.id == workplace.workplace_manager):
+        abort(403)
+
+    return render_template('userWorkplace.html', workplace=workplace, employees=employees, admin_id=admin_id, manager_id=manager_id, active_tasks=active_tasks, organization=organization, projects=projects, non_employees=non_employees, messages_script=messages_script, files_script=files_script, tasks_script=tasks_script, home_script=home_script, workplace_users=workplace_users)
 
 
 
@@ -164,6 +176,8 @@ def get_messages_for_channel(conversation_type, channel_id):
         conversation = Conversation.query.filter_by(workplace_id=channel_id, conversation_type='announcement').first()
     elif conversation_type == 'project':
         conversation = Conversation.query.filter_by(project_id=channel_id, conversation_type='project').first()
+    elif conversation_type == 'home':
+        return jsonify({'messages': [], 'conversation_id': None, 'is_first_batch': True,'date_dividers': [] })
     else:
         return jsonify({'error': 'Invalid conversation type'}), 400
 
@@ -306,3 +320,19 @@ def get_project_home(project_id):
     })
     
 
+@socketio.on('remove_employees')
+def handle_remove_employees(data):
+    try:
+        workplace_id = data.get('workplace_id')
+        employee_ids = data.get('employee_ids', [])
+        
+        User_Workplace.query.filter(User_Workplace.workplace_id == workplace_id, User_Workplace.user_id.in_(employee_ids)).delete(synchronize_session=False)
+        db.session.commit()
+        
+        socketio.emit('employees_removed', {'workplace_id': workplace_id,'removed_ids': employee_ids})
+        return {'status': 'success'}
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error removing employees: {str(e)}")
+        return {'status': 'error', 'message': str(e)}

@@ -259,7 +259,7 @@ function renderFiles(files) {
         }
     } else {
         const noFiles = document.createElement('p');
-        noFiles.className = 'text-center text-muted';
+        noFiles.className = 'lead text-center mt-4';
         noFiles.textContent = 'No files shared yet';
         channelFileContent.appendChild(noFiles);
     }

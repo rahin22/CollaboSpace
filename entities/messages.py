@@ -239,3 +239,9 @@ def handle_delete_reply(data):
     socketio.emit('message_deleted', message_id)
     print(f'Message {message_id} deleted')
 
+
+@messages.route('/direct_messages/<int:organization_id>/<int:user_id>')
+@login_required
+def direct_messages(organization_id, user_id):
+    organization = Organization.query.get(organization_id)  
+    return render_template('direct_messages.html', organization=organization)

@@ -25,6 +25,15 @@ def handle_update_project_status(data):
     if new_status == 'In Progress' and not project.start_date:
         project.start_date = datetime.now()
 
+    if new_status == 'Completed':
+        tasks = Task.query.filter_by(project_id=project_id).all()
+        for task in tasks:
+            task.status = 'completed'
+            socketio.emit('task_status_updated', {
+                'task_id': task.id,
+                'new_status': 'completed'
+            })
+
     
     project.status = new_status
     db.session.commit()
@@ -56,7 +65,6 @@ def handle_project_settings_update(data):
         project_id = data.get('project_id')
         project = Project.query.get_or_404(project_id)
         
-        # Update project fields
         project.project_name = data.get('name')
         project.description = data.get('description')
         project.end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d') if data.get('end_date') else None
@@ -65,6 +73,37 @@ def handle_project_settings_update(data):
         
     except Exception as e:
         print(f"Error updating project settings: {str(e)}")
+        db.session.rollback()
+        return {'status': 'error', 'message': str(e)}
+    
+
+
+@socketio.on('delete_project')
+def handle_project_deletion(data):
+    try:
+        project_id = data.get('project_id')
+        project = Project.query.get_or_404(project_id)
+        workplace_id = project.workplace_id
+        
+        conversations = Conversation.query.filter_by(project_id=project_id).all()
+        for conversation in conversations:
+            ConversationParticipants.query.filter_by(conversation_id=conversation.id).delete()
+            
+            messages = Message.query.filter_by(conversation_id=conversation.id).all()
+            for message in messages:
+                Reply.query.filter_by(message_id=message.id).delete()
+                Reply.query.filter_by(reply_id=message.id).delete()
+            
+            Message.query.filter_by(conversation_id=conversation.id).delete()
+            
+        db.session.delete(project)
+        db.session.commit()
+        
+        socketio.emit('project_deleted', {'project_id': project_id, 'workplace_id': workplace_id })
+        return {'status': 'success'}
+        
+    except Exception as e:
+        print(f"Error deleting project: {str(e)}")
         db.session.rollback()
         return {'status': 'error', 'message': str(e)}
 

@@ -1,0 +1,80 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+{% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
+{% from "macros/sidebar.html" import user_sidebar %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>Dashboard</title>
+    <style>        
+        .card-body h3 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .workplace-card {
+            transition: all 0.3s;
+        }
+
+        .workplace-card:hover {
+            scale: 1.03;
+        }
+
+        .logo-fill {
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1 {
+            height: 35px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--bs-body-bg);;
+        }
+    </style>
+</head>
+
+<body>
+    {{ user_sidebar(organization, current_user, svg_logo) }}
+
+    <div id="content">
+        <h4 class="text-center">My Workplaces</h4>
+        <div class="row m-5">
+            {% for workplace, employee_count in workplaces %}
+            <div class="col-md-3 mb-4 m-2">
+                <div class="card shadow workplace-card" style="cursor: pointer; width: 18rem;" onclick="window.location.href='{% if current_user.id == workplace.workplace_manager %}/workplace/{{ workplace.id }}{% else %}/user_workplace/{{ workplace.id }}{% endif %}';">
+                    <div style="position: relative;">   
+                        <img src="{{ url_for('static', filename=workplace.workplace_image) }}" class="card-img-top" alt="..." style="width: 100%; height: 10rem;">
+                        <div class="card-body text-white" style="position: absolute; bottom: 0; width: 100%;">
+                            <h3>{{ workplace.workplace_name }}</h3>
+                            <p>Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
+                        </div>
+                    </div>
+                    <div class="card-body" style="height: 7rem;">
+                        <p class="card-text"></p>
+                    </div>
+                    <div class="card-footer d-flex flex-row gap-3">
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Creation Date" style="text-decoration: none;" class="link-dark"><i class="ri-global-line"></i>: {{ workplace.created_at.strftime('%B %d, %Y') }}</a></p>
+                        <p><a href="#" data-bs-toggle="tooltip" data-bs-title="Employees" style="text-decoration: none;" class="link-dark"><i class="ri-team-line"></i>: {{ employee_count }}</a></p>
+                    </div>
+                </div>                              
+            </div>
+            {% else %}
+            <div class="container text-center mt-5">
+                <p>You are not assigned to any workplaces yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {{ bootstrap_scripts() }}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

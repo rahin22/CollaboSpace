@@ -34,29 +34,35 @@ async function renderTasks(tasks, channelId) {
         if (tasks.length === 0) {
             const noTasksDiv = document.createElement('div');
             noTasksDiv.classList.add('no-tasks', 'text-center', 'mt-4');
-
+        
             const message = document.createElement('p');
-            message.textContent = 'No tasks created yet, click below to get started.';
             message.classList.add('lead');
-            noTasksDiv.appendChild(message);
-
-            const createButton = document.createElement('button');
-            createButton.textContent = 'Create New Task';
-            createButton.classList.add('btn', 'btn-primary', 'mt-2');
-            createButton.addEventListener('click', () => {
-                const taskDeadlineInput = document.getElementById('taskDeadline');
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
-                taskDeadlineInput.min = formattedNow;
-                showModal(createTaskModal);
-            });
-            noTasksDiv.appendChild(createButton);
-
+            
+            if (parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId) {
+                message.textContent = 'No tasks created yet, click below to get started.';
+                
+                const createButton = document.createElement('button');
+                createButton.textContent = 'Create New Task';
+                createButton.classList.add('btn', 'btn-primary', 'mt-2');
+                createButton.addEventListener('click', () => {
+                    const taskDeadlineInput = document.getElementById('taskDeadline');
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const formattedNow = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    taskDeadlineInput.min = formattedNow;
+                    showModal(createTaskModal);
+                });
+                noTasksDiv.appendChild(message);
+                noTasksDiv.appendChild(createButton);
+            } else {
+                message.textContent = 'No tasks have been created for this project yet.';
+                noTasksDiv.appendChild(message)
+            }
+        
             channelTaskContent.appendChild(noTasksDiv);
         } else {
             const headerDiv = document.createElement('div');
@@ -79,24 +85,50 @@ async function renderTasks(tasks, channelId) {
             };
 
             channelTaskContent.appendChild(headerDiv);
-            headerDiv.appendChild(addtask);
+            if (parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId) {
+                headerDiv.appendChild(addtask);
+            }
 
-            // Split tasks into urgent (including overdue), regular, and completed
+            // Split tasks into my tasks, urgent, regular, and completed
             const now = new Date();
             const fiveDaysFromNow = new Date();
             fiveDaysFromNow.setDate(now.getDate() + 5);
 
+            const isManagerOrAdmin = parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId;
+
+            // My Tasks - tasks assigned to current user
+            const myTasks = tasks.filter(task => 
+                task.assigned_user_id && task.assigned_user_id === parseInt(currentUserId)
+            );
+
+            const assignedTaskIds = tasks
+                .filter(task => task.assigned_user_id)
+                .map(task => task.id);
+
+            // Urgent Tasks - unassigned tasks due within 5 days
             const urgentTasks = tasks.filter(task => {
                 const dueDate = new Date(task.due_date);
-                return dueDate <= fiveDaysFromNow && task.status !== 'completed'; 
+                return dueDate <= fiveDaysFromNow && 
+                    task.status !== 'completed' && 
+                    (!task.assigned_user_id || (isManagerOrAdmin && task.assigned_user_id !== parseInt(currentUserId))) &&
+                    !myTasks.map(t => t.id).includes(task.id);
             });
 
+            // Other Tasks - unassigned tasks due later
             const otherTasks = tasks.filter(task => {
                 const dueDate = new Date(task.due_date);
-                return dueDate > fiveDaysFromNow && task.status !== 'completed';
+                return dueDate > fiveDaysFromNow && 
+                    task.status !== 'completed' && 
+                    (!task.assigned_user_id || (isManagerOrAdmin && task.assigned_user_id !== parseInt(currentUserId))) &&
+                    !myTasks.map(t => t.id).includes(task.id);
             });
 
-            const completedTasks = tasks.filter(task => task.status === 'completed');
+            // Completed Tasks - unassigned completed tasks
+            const completedTasks = tasks.filter(task => 
+                task.status === 'completed' && 
+                (!task.assigned_user_id || (isManagerOrAdmin && task.assigned_user_id !== parseInt(currentUserId))) &&
+                !myTasks.map(t => t.id).includes(task.id)
+            );
             
 
             // Function to create accordion
@@ -160,8 +192,19 @@ async function renderTasks(tasks, channelId) {
                         dueDateSpan.textContent = `Due: ${formattedTimestamp}`;
                     }
 
+
                     accordionButton.appendChild(accordionButtonInner);
+                                        
+                    if (task.assigned_user_id) {
+                        const assignedUserDiv = document.createElement('div');
+                        assignedUserDiv.classList.add('mt-2', 'small', 'text-muted');
+                        assignedUserDiv.innerHTML = `Assigned to: <span class="fw-bold">${task.user.username}</span>`;
+                        taskNameSpan.appendChild(assignedUserDiv);
+                    }
+
                     accordionButtonInner.appendChild(taskNameSpan);
+
+
                     accordionButtonInner.appendChild(dueDateSpan);
 
                     accordionHeader.appendChild(accordionButton);
@@ -214,7 +257,10 @@ async function renderTasks(tasks, channelId) {
                     dropdownDiv.appendChild(dropdownToggle);
                     dropdownDiv.appendChild(dropdownMenu);
 
-                    accordionBody.appendChild(dropdownDiv);
+                    if (parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId) {
+                        accordionBody.appendChild(dropdownDiv);
+                    }
+                    
 
                     // Task Description
                     const taskDescriptionLabel = document.createElement('p');
@@ -345,6 +391,11 @@ async function renderTasks(tasks, channelId) {
 
                 channelTaskContent.appendChild(accordion);
             };
+
+            // Create My Tasks Accordion
+            if (myTasks.length > 0) {
+                createAccordion(myTasks, 'myTasksAccordion', 'Assigned Tasks');
+            }
 
             // Create Urgent Tasks Accordion 
             if (urgentTasks.length > 0) {
@@ -606,8 +657,17 @@ function displayTaskFiles(file, taskId, taskStatus) {
     };
 
     fileDiv.appendChild(fileHeader);
-    fileDiv.appendChild(removeFileButton);
-    fileUploadDiv.appendChild(fileDiv);
+    
+
+    if (parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId || file.user.id === parseInt(currentUserId)) {
+        fileDiv.appendChild(removeFileButton);
+    }
+
+    if (fileUploadDiv) {
+        fileUploadDiv.appendChild(fileDiv);
+    } else {
+        console.log('fileUploadDiv not found in the DOM');
+    }
 }
 
 

@@ -185,9 +185,214 @@
           <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
             <li><a class="text-decoration-none link-dark fw-bold" href="#" style="margin-left: 15px; cursor:default;">{{ current_user.username }}</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">New project...</a></li>
             <li><a class="dropdown-item" href="#">Settings</a></li>
             <li><a class="dropdown-item" href="#" onclick="showModal(codeModal)">Organisation Code</a></li>
+            <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+      
+
+      <nav class="navbar sticky-top" id="search-navbar">
+        <div class="container-fluid d-flex justify-content-center">
+          <form class="d-flex justify-content-center w-100" role="search">
+            <input class="form-control w-50" id="workplace-search" type="search" placeholder="Search {{ workplace.workplace_name }}" aria-label="Search">
+          </form>
+        </div>
+      </nav>
+
+      <!-- Workplace Sidebar -->
+
+{% endmacro %}
+
+
+
+{% macro user_sidebar(organization, current_user, svg_logo) %}
+    <!-- Sidebar -->
+    <div id="sidebar" class="d-flex flex-column flex-shrink-0 link-dark shadow"  style="font-family: 'Poppins'; visibility: visible;" onmouseover="showCloseButton(state='visible')" onmouseout="showCloseButton(state='hidden')">
+        <div class="form-header d-flex flex-row mt-4" onclick="redirHome()">
+            {{ svg_logo() }}
+            <span class="fw-bold fs-4" style="font-family: Poppins;">Collabospace</span>
+        </div>
+        <a href="# " class="d-flex align-items-center mt-3 mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+            <svg class="bi me-2" width="40" height="32">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-5">{{ organization.organization_name }}</span>
+        </a>
+        <hr class="large-nav-divider">
+        <ul class="nav nav-pills flex-column mb-auto sidebar-pills">
+            <li>
+                <a href="{{ url_for('dashboard.user_dashboard', organization_id=organization.id) }}" id="dashboard-pill" class="nav-link active"><i class="ri-dashboard-line" style="margin-right: 10px;"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="{{ url_for('dashboard.organization_profile', organization_id=organization.id) }}" id="employee-pill" class="nav-link link-dark"><i class="ri-folder-user-line" style="margin-right: 10px;"></i> Organisation Profile</a>
+            </li>
+            <li>
+                <a href="{{ url_for('messages.direct_messages', organization_id=organization.id, user_id=current_user.id) }}" class="nav-link link-dark"><i class="ri-message-3-line" style="margin-right: 10px;"></i> Direct Messages</a>
+            </li>
+
+            <li>
+              <a href="#" class="nav-link link-dark"><i class="ri-line-chart-fill"style="margin-right: 10px;"></i> Analytics</a>
+          </li>
+
+        </ul>
+
+        <div class="d-flex justify-content-end"  id="close-button"  style="height: 37%; width: 282px; visibility:hidden;  transition: opacity 0.3s ease, visibility 0.3s ease;" >
+            <i class="ri-arrow-left-s-line fs-4 rounded border shadow" style="height:fit-content;  cursor: pointer; background-color: var(--bs-body-bg);" onclick="closeNav()"></i>
+        </div>
+        
+        <ul class="nav nav-pills p-2 mt-2">
+            <li class="nav-item">
+              <a class="nav-link light-button" id="light-button" aria-current="page" href="#" style="font-size: 12px;"><i class="ri-sun-line"></i> Light</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active auto-button" id="auto-button" href="#" style="font-size: 12px;"><i class="ri-contrast-2-fill"></i> Auto</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link dark-button" id="dark-button" href="#" style="font-size: 12px;"><i class="ri-moon-line"></i> Dark</a>
+            </li>
+        </ul>
+
+        <hr class="large-nav-divider">
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
+                <strong>{{ current_user.username }}</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser1">
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
+                <li>
+                    <hr class="dropdown-divider large-nav-divider">
+                </li>
+                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+            </ul>
+        </div>
+    </div>
+    <!--  End Sidebar -->
+
+
+
+    <!-- Small Sidebar -->
+    <div id="smallSidebar" class="d-flex flex-column flex-shrink-0 shadow" style="visibility: hidden;" onmouseover="showButton(state='visible')" onmouseout="showButton(state='hidden')">
+        <a href="/" class="d-block p-3 link-dark text-decoration-none" title="">
+            {{ svg_logo() }}
+        </a>
+        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center sidebar-pills">
+          <li class="nav-item">
+            <a href="{{ url_for('dashboard.user_dashboard', organization_id=organization.id) }}" class="nav-link active py-3" aria-current="page" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                <i class="ri-dashboard-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('dashboard.organization_profile', organization_id=organization.id) }}" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Organisation Profile">
+              <i class="ri-folder-user-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('messages.direct_messages', organization_id=organization.id, user_id=current_user.id) }}" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Direct Messages">
+              <i class="ri-message-3-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
+                <i class="ri-calendar-line"></i>
+            </a>
+          </li>
+        </ul>
+
+     
+
+        <div class="d-flex justify-content-end" id="open-button"  style="height: 30%; width: 4.8rem; visibility:hidden;  transition: opacity 0.3s ease in, visibility 0.3s ease in;">
+            <i class="ri-arrow-right-s-line fs-4 shadow border rounded" style="background-color: var(--bs-body-bg); height:fit-content; cursor: pointer;" onclick="openNav()"></i>
+        </div>
+
+
+
+        <div class="flex-column mt-auto text-center">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="theme-dropdown-logo" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i id="theme-logo-icon" class="ri-contrast-2-fill fs-4"></i>
+                </a>
+                <ul class="dropdown-menu text-small shadow" id="theme-dropdown" aria-labelledby="dropdownUser3">
+                  <li><a class="dropdown-item light-button" href="#"><i class="ri-sun-line"></i> Light</a></li>
+                  <li><a class="dropdown-item auto-button" href="#"><i class="ri-contrast-2-fill"></i> Auto</a></li>
+                  <li><a class="dropdown-item dark-button" href="#"><i class="ri-moon-line"></i> Dark</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="dropdown border-top">
+          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
+          </a>
+          <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
+            <li><a class="text-decoration-none link-dark fw-bold" href="#" style="margin-left: 15px; cursor:default;">{{ current_user.username }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+{% endmacro %}
+
+
+
+{% macro user_workplace_sidebar(organization, current_user, svg_logo, workplace) %}
+    <!-- Workplace Sidebar -->
+    <div id="smallSidebar" class="d-flex flex-column flex-shrink-0">
+        <a href="/" class="d-block p-3 link-dark text-decoration-none" title="">
+            {{ svg_logo() }}
+        </a>
+        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center sidebar-pills">
+          <li class="nav-item">
+            <a href="{{ url_for('dashboard.user_dashboard', organization_id=organization.id) }}" class="nav-link link-dark py-3" aria-current="page" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+                <i class="ri-dashboard-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('dashboard.organization_profile', organization_id=organization.id) }}" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Organisation Profile">
+              <i class="ri-folder-user-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+                <i class="ri-shopping-bag-line"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link py-3 link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
+                <i class="ri-calendar-line"></i>
+            </a>
+          </li>
+        </ul>
+
+        <div class="flex-column mt-auto text-center">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="theme-dropdown-logo" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i id="theme-logo-icon" class="ri-contrast-2-fill fs-4"></i>
+                </a>
+                <ul class="dropdown-menu text-small shadow" id="theme-dropdown" aria-labelledby="dropdownUser3">
+                  <li><a class="dropdown-item light-button" href="#"><i class="ri-sun-line"></i> Light</a></li>
+                  <li><a class="dropdown-item auto-button" href="#"><i class="ri-contrast-2-fill"></i> Auto</a></li>
+                  <li><a class="dropdown-item dark-button" href="#"><i class="ri-moon-line"></i> Dark</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="dropdown border-top">
+          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="data:image/png;base64,{{current_user.pfp | b64encode}}" alt="" width="32" height="32" class="rounded-circle me-2">
+          </a>
+          <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
+            <li><a class="text-decoration-none link-dark fw-bold" href="#" style="margin-left: 15px; cursor:default;">{{ current_user.username }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
             <li><a class="dropdown-item" href="/entry">Exit Organisation</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/logout">Sign out</a></li>

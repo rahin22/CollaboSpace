@@ -9,7 +9,8 @@ from dateutil.relativedelta import relativedelta
 from database.models import db, User, Role, Organization, Workplace, User_Workplace, Project, Task, Employee_Info, Salary, Message, FileAttachment, Conversation, ConversationParticipants
 import os, random
 from authlib.integrations.flask_client import OAuth
-from sqlalchemy import func
+from sqlalchemy import distinct, func
+from datetime import datetime  
 
 
 dashboard = Blueprint('dashboard', __name__)
@@ -32,6 +33,34 @@ def admin_dashboard(organization_id):
         abort(403)  
     
     return render_template('admindash.html', organization=organization, workplaces=workplaces, employees=employees)
+
+
+@dashboard.route('/user_dashboard/<int:organization_id>')
+@login_required
+def user_dashboard(organization_id):
+    organization = Organization.query.filter_by(id=organization_id).first()
+
+    workplaces = db.session.query(
+        Workplace,
+        db.func.count(distinct(User_Workplace.user_id)).label('employee_count')
+    ).join(
+        User_Workplace, User_Workplace.workplace_id == Workplace.id
+    ).filter(
+        Workplace.organization_id == organization_id,
+        Workplace.id.in_(
+            db.session.query(User_Workplace.workplace_id).filter(
+                User_Workplace.user_id == current_user.id
+            )
+        )
+    ).group_by(Workplace.id).all()
+    
+    employee_ids = [emp.user_id for emp in Employee_Info.query.filter_by(organization_id=organization_id).all()]
+    employees = Employee_Info.query.filter_by(organization_id=organization_id).all()
+
+    if current_user.id not in employee_ids:
+        abort(403)
+        
+    return render_template('userDash.html', organization=organization, workplaces=workplaces, employees=employees)
 
 
 @dashboard.route('/add_workplace/<int:organization_id>', methods=['GET','POST'])
@@ -105,4 +134,98 @@ def edit_employee(organization_id):
         db.session.commit()
         
         return redirect(url_for('dashboard.employee_management', organization_id=organization_id))
+    
+
+
+@dashboard.route('/user_dashboard/organization_profile/<int:organization_id>')
+@login_required
+def organization_profile(organization_id):
+
+    organization = Organization.query.get_or_404(organization_id)
+    employee_info = Employee_Info.query.filter_by(organization_id=organization_id, user_id=current_user.id).first_or_404()
+    managed_workplaces = Workplace.query.filter_by(organization_id=organization_id, workplace_manager=current_user.id).all()
+    
+
+    user_workplaces = db.session.query(Workplace)\
+        .join(User_Workplace)\
+        .filter(
+            User_Workplace.user_id == current_user.id,
+            Workplace.organization_id == organization_id
+        ).all()
+    
+
+    assigned_tasks = Task.query\
+        .join(Project)\
+        .join(Workplace)\
+        .filter(
+            Workplace.organization_id == organization_id,
+            Task.assigned_user_id == current_user.id,
+            Task.status != 'completed'
+        ).all()
+    
+    messages_sent = Message.query\
+    .join(Conversation)\
+    .join(Workplace)\
+    .filter(
+        Workplace.organization_id == organization_id,
+        Message.sender_id == current_user.id
+    ).count()
+
+    files_uploaded = FileAttachment.query\
+        .join(Message, FileAttachment.message_id == Message.id, isouter=True)\
+        .join(Task, FileAttachment.task_id == Task.id, isouter=True)\
+        .join(Project)\
+        .join(Workplace)\
+        .filter(
+            Workplace.organization_id == organization_id,
+            FileAttachment.uploaded_by_id == current_user.id
+        ).count()
+
+    completed_tasks = Task.query\
+        .join(Project)\
+        .join(Workplace)\
+        .filter(
+            Workplace.organization_id == organization_id,
+            Task.assigned_user_id == current_user.id,
+            Task.status == 'completed'
+        ).count()
+    
+    profile_data = {
+        'organization': organization,
+        'employee_info': {
+            'position': employee_info.position,
+            'salary': employee_info.salary,
+            'date_joined': employee_info.date_of_joining,
+        },
+        'workplaces': {
+            'managed': managed_workplaces,
+            'member_of': user_workplaces,
+            'total_count': len(managed_workplaces) + len(user_workplaces)
+        },
+        'tasks': {
+            'active': assigned_tasks,
+            'active_count': len(assigned_tasks),
+            'completed_count': completed_tasks
+        },
+        'contributions': {
+            'messages_sent': messages_sent,
+            'files_uploaded': files_uploaded,
+            'completed_tasks': completed_tasks,
+            'active_tasks_count': len(assigned_tasks)
+        },
+        'active_tasks': assigned_tasks,
+        'user': {
+            'name': f"{current_user.first_name} {current_user.last_name}",
+            'username': current_user.username,
+            'email': current_user.email,
+            'pfp': current_user.pfp
+        },
+        'stats': {
+            'days_employed': (datetime.now() - employee_info.date_of_joining).days,
+            'workplaces_managed': len(managed_workplaces),
+            'total_workplaces': len(user_workplaces)
+        }
+    }
+    
+    return render_template('organization_profile.html', profile=profile_data, organization=organization, now=datetime.now())
     

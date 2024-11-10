@@ -234,28 +234,34 @@ async function changeProjectSettings() {
         
         const projectData = await response.json();
         const tasksData = await tasksResponse.json();
-        console.log(projectData);
-
-        const today = new Date().toISOString().split('T')[0];
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
         let latestDueDate = today;
-        if (tasksData.length > 0) {
-            const taskDueDates = tasksData
+        if (tasksData.tasks && tasksData.tasks.length > 0) {
+            const taskDueDates = tasksData.tasks
                 .filter(task => task.due_date)
-                .map(task => new Date(task.due_date));
+                .map(task => {
+                    const date = new Date(task.due_date);
+                    date.setHours(0, 0, 0, 0);
+                    return date;
+                });
             
             if (taskDueDates.length > 0) {
                 const maxTaskDate = new Date(Math.max(...taskDueDates));
                 maxTaskDate.setDate(maxTaskDate.getDate() + 1);
-                latestDueDate = maxTaskDate.toISOString().split('T')[0];
+                latestDueDate = maxTaskDate;
             }
         }
 
-        document.getElementById('projectName').value = projectData.name;
-        document.getElementById('projectDescription').value = projectData.description || '';
+        const formattedMinDate = latestDueDate.toISOString().split('T')[0];
+
+        document.getElementById('projectSettingsName').value = projectData.name;
+        document.getElementById('projectSettingsDescription').value = projectData.description || '';
         const endDateInput = document.getElementById('endDate');
         endDateInput.value = projectData.end_date || '';
-        endDateInput.min = latestDueDate; 
+        endDateInput.min = formattedMinDate;
         
         document.getElementById('confirmProjectName').setAttribute('data-original', projectData.name);
 
@@ -263,16 +269,17 @@ async function changeProjectSettings() {
 
     } catch (error) {
         console.error('Error loading project settings:', error);
-        Toast.error('Failed to load project settings');
     }
 }
+
+
 
 
 async function submitProjectSettings(event) {
     event.preventDefault();
 
-    const projectName = document.getElementById('projectName').value.trim();
-    const projectDescription = document.getElementById('projectDescription').value.trim();
+    const projectName = document.getElementById('projectSettingsName').value.trim();
+    const projectDescription = document.getElementById('projectSettingsDescription').value.trim();
     const endDate = document.getElementById('endDate').value;
 
 
@@ -287,56 +294,75 @@ async function submitProjectSettings(event) {
 
     socket.emit('update_project_settings', updatedData)
     $('#projectSettingsModal').modal('hide');
-    document.getElementById('channel-home').click()
+    setTimeout(() => {
+        document.getElementById('channel-home').click();
+    }, 500);
 }
+
+async function deleteProject() {
+    try {
+        const projectNameInput = document.getElementById('confirmProjectName');
+        const deleteButton = document.getElementById('deleteProjectBtn');
+        const originalName = projectNameInput.getAttribute('data-original');
+        
+        if (projectNameInput.value !== originalName) {
+            projectNameInput.classList.add('is-invalid');
+            deleteButton.disabled = true;
+            return;
+        }
+
+        projectNameInput.classList.remove('is-invalid');
+        deleteButton.disabled = false;
+
+        socket.emit('delete_project', { project_id: channelId }, (response) => {
+            if (response.status === 'success') {
+                console.log('Project deleted:', response.message);
+                bootstrap.Modal.getInstance(projectSettingsModal).hide();
+                window.location.href = `/workplace/${workplaceId}`;
+            } else {
+                console.error('Error deleting project:', response.error);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error deleting project:', error);
+    }
+}
+
+
+document.getElementById('projectSettingsModal').addEventListener('show.bs.modal', () => {
+    document.getElementById('deleteProjectBtn').disabled = true;
+    document.getElementById('confirmProjectName').value = '';
+});
+
+
+document.getElementById('confirmProjectName').addEventListener('input', (e) => {
+    const input = e.target;
+    const deleteButton = document.getElementById('deleteProjectBtn');
+    const originalName = input.getAttribute('data-original');
+    console.log('Original name:', originalName);
+    
+    if (input.value === originalName) {
+        input.classList.remove('is-invalid');
+        deleteButton.disabled = false;
+    } else {
+        input.classList.add('is-invalid');
+        deleteButton.disabled = true;
+    }
+});
+
+socket.on('project_deleted', (data) => {
+    if (data.project_id === channelId) {
+        window.location.href = `/workplace/${data.workplace_id}`;
+    }
+});
 
 
 
 socket.on('project_status_updated', data => {
     console.log('Project status updated:', data.new_status);
-    const statusDetails = getStatusDetails(data.new_status);
-    
-    const statusBadge = document.getElementById(`project-${data.project_id}-status-badge`);
-    statusBadge.innerHTML = `<i class="${statusDetails.icon}"></i> ${data.new_status}`;
-    statusBadge.classList.remove('text-secondary', 'text-primary', 'text-success', 'text-danger', 'text-warning');
-    statusBadge.classList.add(statusDetails.color);
 
-    const existingInactiveMessage = document.querySelector('.alert-warning');
-    if (data.new_status !== 'In Progress') {
-        if (!existingInactiveMessage) {
-            const inactiveMessage = `
-                <div class="alert alert-warning mb-4" role="alert">
-                    <h5 class="alert-heading"><i class="ri-error-warning-line"></i> Project ${data.new_status}</h5>
-                    <p class="mb-0">This project is currently ${data.new_status.toLowerCase()}. Some features may be disabled.</p>
-                </div>
-            `;
-            document.querySelector('.project-overview').insertAdjacentHTML('afterbegin', inactiveMessage);
-        }
-    } else if (existingInactiveMessage) {
-        existingInactiveMessage.remove();
-    }
-
-    const quickActionsDiv = document.querySelector('.quick-actions');
-    if (data.new_status === 'Not Started') {
-        quickActionsDiv.innerHTML = `
-            <button class="btn btn-success me-2" id="startProjectBtn">
-                <i class="ri-play-line"></i> Start Project
-            </button>
-            <button class="btn btn-secondary" id="projectSettingsBtn">
-                <i class="ri-settings-3-line"></i> Project Settings
-            </button>
-        `;
-        document.getElementById('startProjectBtn').addEventListener('click', () => startProject());
-    } else {
-        quickActionsDiv.innerHTML = `
-            <button class="btn btn-warning me-2" id="changeStatusBtn">
-                <i class="ri-refresh-line"></i> Change Status
-            </button>
-            <button class="btn btn-secondary" id="projectSettingsBtn">
-                <i class="ri-settings-3-line"></i> Project Settings
-            </button>
-        `;
-        document.getElementById('changeStatusBtn').addEventListener('click', () => changeProjectStatus());
-    }
-    document.getElementById('projectSettingsBtn').addEventListener('click', () => changeProjectSettings());
+    setTimeout(() => {
+        document.getElementById('channel-home').click();
+    }, 500);
 });

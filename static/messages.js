@@ -222,6 +222,7 @@ function renderMessages(messages, prepend = false, isFirstBatch = false, dateDiv
         messageDiv.classList.add('message', 'position-relative');
         messageDiv.id = `message-${message.id}`;
         messageDiv.dataset.messageId = message.id;
+        messageDiv.dataset.userId = message.user.id;
 
         userReactions[message.id] = userReactions[message.id] || {};
 
@@ -286,7 +287,9 @@ function renderMessages(messages, prepend = false, isFirstBatch = false, dateDiv
                     <div class="vr mx-1"></div>
 
                     <button type="button" class="btn btn-sm" onclick="replyToMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Reply"><i class="ri-reply-line"></i></button>
-                    <button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>
+                    ${message.user.id === parseInt(currentUserId) ? 
+                        `<button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>` 
+                        : ''}
                     <button type="button" class="btn btn-sm" onclick="deleteReply(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>
                 </div>
 
@@ -320,7 +323,9 @@ function renderMessages(messages, prepend = false, isFirstBatch = false, dateDiv
                     <div class="vr mx-1"></div>
 
                     <button type="button" class="btn btn-sm" onclick="replyToMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Reply"><i class="ri-reply-line"></i></button>
-                    <button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>
+                    ${message.user.id === parseInt(currentUserId) ? 
+                        `<button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>` 
+                        : ''}
                     <button type="button" class="btn btn-sm" onclick="deleteMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>
                 </div>
 
@@ -534,8 +539,13 @@ function appendMessage(message) {
                 <div class="vr mx-1"></div>
 
                 <button type="button" class="btn btn-sm" onclick="replyToMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Reply"><i class="ri-reply-line"></i></button>
-                <button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>
-                <button type="button" class="btn btn-sm" onclick="deleteMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>
+                ${message.user.id === parseInt(currentUserId) ? 
+                `<button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>` 
+                : ''}
+                ${(parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId || message.user.id === parseInt(currentUserId)) ? 
+                    `<button type="button" class="btn btn-sm" onclick="deleteMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>`
+                    : ''
+                }
             </div>
 
             <div class="d-flex justify-content-end w-100 mt-4 mb-4" id="emoji-picker-container-${message.id}" style="position: absolute; z-index: 1000; display: none; transform: translateX(-20px); "></div>
@@ -688,8 +698,13 @@ function appendReply(message) {
                     <div class="vr mx-1"></div>
 
                     <button type="button" class="btn btn-sm" onclick="replyToMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Reply"><i class="ri-reply-line"></i></button>
-                    <button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>
-                    <button type="button" class="btn btn-sm" onclick="deleteReply(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>
+                    ${message.user.id === parseInt(currentUserId) ? 
+                        `<button type="button" class="btn btn-sm" onclick="editMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Edit Message"><i class="ri-edit-line"></i></button>` 
+                        : ''}
+                    ${(parseInt(currentUserId) === managerId || parseInt(currentUserId) === adminId || message.user.id === parseInt(currentUserId)) ? 
+                        `<button type="button" class="btn btn-sm" onclick="deleteMessage(${message.id})" data-bs-toggle="tooltip" data-bs-title="Delete Message"><i class="ri-delete-bin-6-line text-danger"></i></button>`
+                        : ''
+                    }
                 </div>
 
                 <div class="d-flex justify-content-end w-100 mt-4 mb-4" id="emoji-picker-container-${message.id}" style="position: absolute; z-index: 1000; display: none; transform: translateX(-20px); "></div>

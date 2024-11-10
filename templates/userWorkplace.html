@@ -1,0 +1,886 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+{% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
+{% from "macros/workplaceModals.html" import createProject_modal %}
+{% from "macros/workplaceModals.html" import addEmployee_modal %}
+{% from "macros/workplaceModals.html" import createLink_modal %}
+{% from "macros/workplaceModals.html" import deleteMessage_modal %}
+{% from "macros/sidebar.html" import user_workplace_sidebar %}
+{% from "macros/workplaceModals.html" import filePreviewModal %}
+{% from "macros/workplaceModals.html" import createTask_modal %}
+{% from "macros/workplaceModals.html" import submitTask_modal %}
+{% from "macros/workplaceModals.html" import deleteTask_modal %}
+{% from "macros/workplaceModals.html" import projectSettings_modal %}
+{% from "macros/workplaceModals.html" import projectStatus_modal %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{ head_imports() }}
+    <title>{{ workplace.workplace_name }}</title>
+    <style>
+        body{
+            overflow: hidden;
+        }
+
+        #smallSidebar {
+            background-color: var(--secondary-color);
+        }
+
+        #workplace-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            padding: 12px;
+            transition: width 0.5s ease;
+            margin-left: 4.5rem;
+            margin-top: 52px;
+            overflow: hidden;
+        }
+
+        .workplace-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; 
+        }
+
+        #workplace-nav .nav-link{
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        #workplace-nav .nav-link:hover{
+            background-color: var(--search-bar-color);
+
+        }
+
+        #smallSidebar a, #smallSidebar ul, #smallSidebar .dropdown{
+            opacity: 1; 
+            transition: opacity 0.5s ease; 
+        }
+
+        #search-navbar{
+            margin-left: 4.5rem;
+            background-color: var(--secondary-color);
+        }
+
+        #workplace-infoBar{
+            position: fixed;
+            width: 100%;
+            margin-left: 352px;
+            background-color: var(--bs-body-bg);
+            box-shadow: 0 0.5rem 1rem -0.5rem rgba(0, 0, 0, 0.15);
+        }
+
+        .logo-fill {
+            fill: #ffffff;
+        }
+
+        #Layer_1 {
+            height: 35px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--secondary-color);;
+        }
+
+        #workplace-search{
+            background-color: #0678d5;
+            border: none;
+        }
+
+        #workplace-collapse::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-track {
+            background: none;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-thumb {
+            background: none;
+            transition: all 0.3s;
+        }
+
+        #workplace-collapse::-webkit-scrollbar-thumb:hover {
+            cursor: pointer;
+        }
+
+        #workplace-collapse:hover::-webkit-scrollbar-thumb {
+            background: var(--search-bar-color); 
+            border-radius: 10px; 
+        }
+
+
+
+        .tabActive {
+            background-color: var(--search-bar-color);
+        }
+
+        .attachment-button {
+            padding: 0px;
+        }
+
+        .channel-start-message {
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            padding: 5px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .message:hover {
+            background-color: var(--search-bar-color);
+        }
+
+        .edit-bar {
+            right: 10px;
+            transform: translateY(-10px);
+        }
+
+        .edit-bar button{
+            background-color: var(--bs-body-bg);
+        }
+    
+
+        .workplace-content { 
+            margin-left: 352px;
+            margin-top: 100px;
+            padding: 0 20px;
+            margin-bottom: 200px;
+            height: calc(100vh - 300px); 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .channel-main {
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-content ol {
+            padding-left: 1rem;
+        }
+
+        .date-divider {
+            display: flex;
+            align-items: center;
+            margin: 1em 0; 
+        }
+        
+        .divider-line {
+            flex-grow: 1; 
+            height: 1px; 
+            background-color: #ccc; 
+            margin: 0 10px; 
+        }
+        
+        .divider-text {
+            padding: 0 10px; 
+            font-weight: bold; 
+            color: #6c757d; 
+        }
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            padding: 8px 0;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .progress {
+            height: 20px;
+        }
+        
+        .card {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        
+        
+    </style>
+</head>
+
+<body>
+    {{ user_workplace_sidebar(organization, current_user, svg_logo, workplace) }}
+
+    <div id="workplace-nav" class="d-flex flex-column flex-shrink-0 link-dark shadow"  style="font-family: 'Poppins';" >
+
+        <div class="dropdown d-flex flex-row justify-content-lg-between" id="">
+            <a href="#" class="d-flex align-items-center link-dark text-decoration-none" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" >
+                <strong class="fs-4 workplace-name">{{ workplace.workplace_name }}</strong>
+            </a>
+        </div>
+
+        <ul class="list-unstyled fw-normal mt-2">
+            <li><a href="#" id="home-link" class="nav-link channel-tab tabActive fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="home"><i class="ri-home-5-line" style="margin-right: 7px;"></i> Home</a></li>
+        </ul>
+
+        <ul class="list-unstyled fw-normal">
+            <li><a href="#" id="announcement-link" class="nav-link channel-tab fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="announcement"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
+        </ul>
+
+
+        <div id="workplace-collapse" class="overflow-auto mb-4">
+           <ul class="list-unstyled mb-0 mt-0 ">
+               <li class="mb-1">
+                   <div class="d-flex flex-row justify-content-lg-between">
+                       <button class="btn align-items-center rounded collapsed fw-bold" data-bs-toggle="collapse" data-bs-target="#content-collapse" aria-expanded="false" onclick="collapseArrow()">
+                          <i class="ri-arrow-down-s-fill" id="collapse-icon" style="margin-right: 10px;"></i> Projects
+                       </button>
+                       <a href="#" class="nav-link link-dark" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Filter Projects">
+                          <i class="ri-filter-2-line"></i>
+                       </a>
+                   </div>
+
+                   <div class="collapse show" id="content-collapse">
+                       <ul class="list-unstyled fw-normal pb-1 d-sm-flex flex-sm-column gap-1 mt-2" id="workplace-project-tree" style="margin-left: 15px;">
+                        {% if projects %}
+                        {% for project in projects %}
+                        <li class="project-list-item" data-project-id="{{ project.id }}" ><a href="#" class="nav-link channel-tab link-dark" data-channel-id="{{ project.id }}" data-conversation-type="project"><i class="project-icon" style="margin-right: 10px;"></i> {{ project.project_name }}</a></li>
+                        {% endfor %}
+                        {% else %}
+                        <li class="link-dark">
+                             No Projects Yet<br><a href="#" onclick="showModal(createProjectModal)" class="link-primary">Click here</a> to get started
+                        </li>
+                        {% endif %}
+                      </ul>
+                  </div>
+               </li>
+           </ul>
+        </div>
+    </div>
+
+    
+    <nav class="navbar" id="workplace-infoBar" >
+        <div class="d-flex flex-column" style="margin-left: 20px;">
+            <p class="fw-bold" id="channel-title" style="font-size: 18px; margin-bottom: 0px;"></p>
+            <ul class="nav nav-underline">
+                <li class="nav-item">
+                  <a class="nav-link link-dark channel-pages"  id="channel-messages" aria-current="page" href="#"><i class="ri-chat-3-fill"></i> Messages</a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link link-dark channel-pages" id="channel-files" href="#"><i class="ri-file-3-line "></i> Files</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+
+    <div class="workplace-content">
+
+        <div class="channel-main" id="channel-stream-content" style="display: none;">
+            <div class="position-relative mb-4">
+                <div class="workplace-banner" style="height: 240px; background-image: url('/static/{{ workplace.workplace_image }}'); background-size: cover; background-position: center; border-radius: 10px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 20px;">
+                        <h1 class="text-white mb-0" style="font-size: 2.5rem;">{{ workplace.workplace_name }}</h1>
+                        <p class="text-white-50 mb-0"><i class="ri-user-line me-2"></i>Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid p-0">
+                <!-- Workplace Stats -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-team-line me-2"></i>Employees</h6>
+                                <h2 class="card-title mb-0">{{ workplace_users|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-folder-line me-2"></i>Projects</h6>
+                                <h2 class="card-title mb-0">{{ projects|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-task-line me-2"></i>Active Tasks</h6>
+                                <h2 class="card-title mb-0">{{ active_tasks|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-calendar-line me-2"></i>Created</h6>
+                                <h3 class="card-title mb-0">{{ workplace.created_at.strftime('%B %d, %Y') }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3"><i class="ri-time-line me-2"></i>Recent Activity</h5>
+                                <div class="activity-feed">
+                                    {% if projects %}
+                                        {% for project in projects[:5] %}
+                                        <div class="activity-item d-flex align-items-center border-bottom pb-3">
+                                            <div class="me-3">
+                                                <span class="badge bg-primary"><i class="ri-folder-line"></i></span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">{{ project.project_name }}</h6>
+                                                <small class="text-muted">Created on {{ project.created_at.strftime('%B %d, %Y') }}</small>
+                                            </div>
+                                            <div class="ms-auto">
+                                                <span class="badge bg-{{ 'success' if project.status == 'In Progress' else 'secondary' }}">
+                                                    {{ project.status }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted text-center mb-0">No recent activity</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-5 channel-main" id="channel-home-content" style="display: none;"></div>
+        <div class="mb-5 channel-main" id="channel-content" style="display: none;"></div>
+        <div class="mb-5 channel-main" id="channel-file-content" style="display: none;"></div>
+        <div class="mb-5 channel-main" id="channel-task-content" style="display: none;"></div>
+        
+
+        <form id="messageForm" action="" enctype="multipart/form-data" method="POST" style="display: none;">
+            <div class="message-container rounded-4 border">
+                <div class="reply-container shadow-sm w-100 pt-2 pe-3 pb-1 ps-3" style="background-color: var(--bs-body-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; display: none; max-height: 20vh; overflow: auto;">
+                    <div class="reply-header d-flex flex-row justify-content-between">
+                        <p id="reply-title"></p>
+                        <div id="close-button" style="cursor: pointer;" onclick="closeReplyContainer()"><i class="ri-close-line"></i></div>
+                    </div>
+                    <div class="reply-content"></div>
+                </div>
+                <div class="mb-3">
+                    <div id="toolbar">
+                        <span class="ql-formats">
+                            <button class="ql-bold" data-bs-toggle="tooltip"   data-bs-html="true" data-bs-title="<b>Bold</b> <br> Ctrl + B"></button>
+                            <button class="ql-italic" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Italic</b> <br> Ctrl + I"></button>
+                            <button class="ql-strike" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Strikethrough</b>"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link" id="customLinkButton" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Link</b>"></button>
+                            <button class="ql-blockquote" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Block Quote</b>"></button>
+                            <button class="ql-code-block" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Code Block</b>"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Ordered List</b>"></button>
+                            <button class="ql-list" value="bullet" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="<b>Bullet List<b>"></button>
+                        </span>
+
+                    </div>
+                    <div id="editor" class="overflow-auto" style="max-height: 40vh;"></div>
+                    <div id="file-attachment-container" class="d-flex flex-row gap-2" style="flex-wrap: wrap;"></div>
+                </div>
+                <div class="d-flex justify-content-between p-2" style="height: fit-content;">
+                    
+                    <div class="dropdown">
+                        <button class="btn attachment-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="ri-add-circle-line fs-4"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <a class="dropdown-item" href="#" onclick="document.getElementById('fileInput').click()"><i class="ri-file-add-line"></i> Upload a File</a>
+                            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+                        </li>
+                          <li><a class="dropdown-item" href="#"><i class="ri-mic-line"></i> Voice Message</a></li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-sm"><i class="ri-send-plane-2-line"></i></button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+
+
+
+
+    {{ deleteMessage_modal() }}
+    {{ filePreviewModal() }}
+    {{ createLink_modal() }}
+    {{ createTask_modal(workplace_users) }}
+    {{ submitTask_modal() }}
+    {{ deleteTask_modal() }}
+    {{ projectSettings_modal() }}
+    {{ projectStatus_modal() }}
+    {{ addEmployee_modal(workplace, non_employees) }}
+    {{ createProject_modal(workplace) }}
+    {{ code_modal(organization) }}
+    {{ bootstrap_scripts() }}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <script>
+
+        let currentConversationId;
+        let channelId;
+        let conversationType = 'home';
+        let existingDateDividers = new Set();
+        let isUserAtBottom = true;
+        let isReply = false;
+        let selectedFiles = [];
+
+        let userReactions = {};
+        let renderReply = false;
+        let taskFiles = [];
+        let taskIdToDelete = null;
+
+
+        const channelMain = document.querySelectorAll('.channel-main');
+        const channelContent = document.getElementById('channel-content');
+        const channelFileContent = document.getElementById('channel-file-content');
+        const channelHomeContent = document.getElementById('channel-home-content');
+        const channelTaskContent = document.getElementById('channel-task-content');
+        const channelStreamContent = document.getElementById('channel-stream-content');
+
+        const workplaceInfo = document.getElementById('workplace-infoBar');
+        const workplaceContent = document.querySelector('.workplace-content');
+        const socket = io(); 
+        const currentUserId = "{{ current_user.id }}";
+        const managerId = parseInt('{{ manager_id }}');
+        const adminId = parseInt('{{ admin_id }}');
+
+
+        window.onload = function() {
+            console.log('ids',managerId, adminId)
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                switchLinkTheme(savedTheme);
+                setActiveButton(savedTheme);
+            } else {
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (systemPrefersDark) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    switchLinkTheme('dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    switchLinkTheme('light');
+                }
+                setActiveButton('auto');
+            }
+            
+            document.querySelectorAll('.project-list-item').forEach(item => {
+                const projectId = item.getAttribute('data-project-id');
+                checkProjectStatus(projectId, item);
+            });
+            
+          
+            document.getElementById('channel-title').innerHTML = document.querySelector('.tabActive').innerHTML;
+            document.querySelector('.tabActive').click();  
+        };
+
+        
+
+ 
+        document.querySelectorAll('.channel-tab').forEach(tab => {
+            const channelTitle = document.getElementById('channel-title');
+            const workplaceInfobarNav = document.querySelector('#workplace-infoBar .nav');
+            tab.addEventListener('click', async (e) => {
+
+                //TODO: Further into the migration move the proprietary messaging clear functionality to the channel-page conditional statements
+                if (typeof existingDateDividers !== 'undefined' && typeof existingDateDividers.clear === 'function') {
+                    existingDateDividers.clear();
+                }
+                
+                if (typeof removeAllAttachments !== 'undefined' && typeof removeAllAttachments === 'function') {
+                    removeAllAttachments();
+                }
+
+                editQuill = null;
+                activeEditorMessageId = null;
+
+                if (typeof closeReplyContainer !== 'undefined' && typeof closeReplyContainer === 'function') {
+                    closeReplyContainer();
+                }
+                
+                
+                if (typeof outsideClickHandler !== 'undefined' && outsideClickHandler) {
+                    document.removeEventListener('click', outsideClickHandler);
+                    outsideClickHandler = null;
+                }
+                buttonElement = null;
+                emojiPicker = null;
+                emojiPickerContainer = null;
+                emojiPickerOpen = false; 
+                isUserAtBottom = true;
+                //TODO: Further into the migration move the proprietary messaging clear functionality to the channel-page conditional statements
+
+
+                document.querySelector('.tabActive').classList.remove('tabActive');
+                tab.classList.add('tabActive');
+                channelTitle.innerHTML = tab.innerHTML;
+                conversationType = tab.getAttribute('data-conversation-type');
+                channelId = tab.getAttribute('data-channel-id');
+
+                const isAnnouncementsTab = conversationType === 'announcement';
+                if (conversationType === 'home') {
+                    workplaceInfobarNav.innerHTML = '';
+                    channelContent.innerHTML = '';
+                    channelFileContent.innerHTML = '';
+                    channelHomeContent.innerHTML = '';
+                    channelTaskContent.innerHTML = '';
+                    messageForm.style.display = 'none';
+                    workplaceContent.style.height = 'calc(100vh - 100px)';
+                    
+                    channelStreamContent.style.display = 'block';
+                } else {
+                    const infobarHTML = isAnnouncementsTab ? `
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-messages" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                        </li>
+                    ` : `
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-home" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-home-line"></i> Home</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-messages"  href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-tasks" href="#" style="color: var(--bs-change-color);"><i class="ri-stack-line"></i> Tasks</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                        </li>
+                    `;
+                
+                    channelContent.innerHTML = '';
+                    channelFileContent.innerHTML = '';
+                    channelHomeContent.innerHTML = '';
+                    channelTaskContent.innerHTML = '';
+
+                    workplaceInfobarNav.innerHTML = infobarHTML;    
+                } 
+
+                workplaceInfobarNav.querySelectorAll('.channel-pages').forEach(page => {
+                    page.addEventListener('click', handlePageClick(page));
+                });
+        
+
+                const firstPage = workplaceInfobarNav.querySelector('.channel-pages');
+                if (firstPage) {
+                    firstPage.classList.add('active');
+                    firstPage.click(); 
+                }
+            });
+        });
+
+
+        const iconMappings = {
+            'ri-home-line': 'ri-home-fill',
+            'ri-chat-3-line': 'ri-chat-3-fill',
+            'ri-file-3-line': 'ri-file-3-fill',
+            'ri-stack-line': 'ri-stack-fill',
+            'ri-task-line': 'ri-task-fill'
+        };
+        
+
+        function handlePageClick(page) {
+            return async function(e) {
+                e.preventDefault();
+                const pageId = page.getAttribute('id');
+                const channelMessages = document.getElementById('channel-messages');
+                const channelFiles = document.getElementById('channel-files');
+                
+                const previousActive = workplaceInfo.querySelector('.active');
+                if (previousActive) {
+                    previousActive.classList.remove('active');
+                    const previousIcon = previousActive.querySelector('i');
+                    if (previousIcon) {
+                        for (const [regular, filled] of Object.entries(iconMappings)) {
+                            if (previousIcon.classList.contains(filled)) {
+                                previousIcon.classList.remove(filled);
+                                previousIcon.classList.add(regular);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                page.classList.add('active');
+                const icon = page.querySelector('i');
+                if (icon) {
+                    for (const [regular, filled] of Object.entries(iconMappings)) {
+                        if (icon.classList.contains(regular)) {
+                            icon.classList.remove(regular);
+                            icon.classList.add(filled);
+                            break;
+                        }
+                    }
+                }
+                
+                messageForm.style.display = 'none';
+                workplaceContent.style.height = 'calc(100vh - 150px)';
+        
+                channelMain.forEach(item => {
+                    item.style.display = 'none';
+                    if (item.id !== 'channel-stream-content') {
+                        item.innerHTML = '';
+                    }
+                });
+
+                if (pageId === 'channel-messages') {
+                    channelContent.removeEventListener('scroll', handleScroll);
+                    channelContent.innerHTML = '';
+
+                    if (typeof existingDateDividers !== 'undefined' && typeof existingDateDividers.clear === 'function') {
+                        existingDateDividers.clear();
+                    }
+
+                    workplaceContent.style.height = 'calc(100vh - 300px)';
+                    channelContent.style.display = 'block';
+                    const messageForm = document.getElementById('messageForm');
+                    const response = await fetch(`/get_messages_for_channel/${conversationType}/${channelId}`);
+                    
+                    if (response.ok) {
+                        const isAnnouncementsTab = conversationType === 'announcement';
+                        const data = await response.json();
+                        const messages = data.messages;
+                        currentConversationId = data.conversation_id;
+                        socket.emit('join', { room: currentConversationId });
+                        const isFirstBatch = data.is_first_batch;
+                        const dateDividers = data.date_dividers;
+
+                        if (isAnnouncementsTab) {
+                            workplaceContent.style.height = 'calc(100vh - 150px)';
+                            messageForm.style.display = 'none';
+
+                        } else {
+                            messageForm.style.display = 'block';
+                        }
+            
+                        renderMessages(messages, true, isFirstBatch, dateDividers); 
+
+                        const editBars = document.querySelectorAll('.edit-bar');
+                        editBars.forEach(bar => {
+                            const messageDiv = bar.closest('.message');
+                            const messageAuthorId = messageDiv.getAttribute('data-user-id');
+                            console.log(messageAuthorId, currentUserId)
+                            
+                            if (messageAuthorId !== currentUserId) {
+                                const deleteButton = bar.querySelector('[data-bs-title="Delete Message"]');
+                                if (deleteButton) {
+                                    deleteButton.remove();
+                                }
+                            }
+                        });
+
+                        if (isAnnouncementsTab) {
+                            const editBars = document.querySelectorAll('.edit-bar');
+                            console.log(editBars)
+                            editBars.forEach(bar => {
+                                const replyButton = bar.querySelector('[data-bs-title="Reply"]');
+                                if (replyButton) {
+                                    replyButton.remove();
+                                }
+                            });
+                        }
+
+
+
+                        channelContent.addEventListener('scroll', handleScroll);
+                    } else {
+                        console.error('Error fetching messages:', response.statusText);
+                        alert('Error fetching messages');
+                    }
+
+                } else if (pageId === 'channel-files') {
+                    channelFileContent.style.display = 'block';
+                    console.log(channelId)
+                    const response = await fetch(`/get_files_for_channel/${conversationType}/${channelId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const files = data.files;
+                        renderFiles(files);
+                    } else {
+                        console.error('Error fetching files:', response.statusText);
+                        alert('Error fetching files');
+                    }
+
+                } else if (pageId === 'channel-home') {
+                    channelHomeContent.style.display = 'block';
+                    const response = await fetch(`/get_project_home/${channelId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderHome(data);
+                        const quickActionsContainer = document.querySelector('.quick-actions');
+                        if (quickActionsContainer) {
+                            quickActionsContainer.remove();
+                        }
+
+                    } else {
+                        console.error('Error fetching home:', response.statusText);
+                        alert('Error fetching home');
+                    }
+
+
+                } else if (pageId === 'channel-tasks') {
+                    channelTaskContent.style.display = 'block';
+                    const response = await fetch(`/get_tasks_for_project/${channelId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const tasks = data.tasks;
+                        renderTasks(tasks, channelId);
+                    } else {
+                        console.error('Error fetching tasks:', response.statusText);
+                        alert('Error fetching tasks');
+                    }
+                }
+            };
+        }
+
+
+        // Messaging Functionality Js
+        {{ messages_script | safe }}
+        // Messaging Functionality Js
+
+        // File Functionality Js
+        {{ files_script | safe }}
+        // File Functionality Js
+
+        // Task Functionality Js
+        {{ tasks_script | safe }}
+        // Task Functionality Js
+
+        // Home Functionality Js
+        {{ home_script | safe }}
+        // Home Functionality Js
+
+        
+        $(document).ready(function() {
+            $('#employeeSelect').select2({
+                dropdownParent: $('#addEmployeeModal'),
+                templateResult: function(state) {
+                    if (!state.id) {
+                        return state.text;
+                    }
+                    var $state = $(
+                        '<span><img src="data:image/png;base64,' + $(state.element).data('img') + '" class="rounded-circle me-2" width="20" height="20"/>' + state.text + '</span>'
+                    );
+                    return $state;
+                }
+            });
+        });
+
+
+        function collapseArrow() {
+            const collapseButton = document.getElementById('content-collapse');
+            const collapseIcon = document.getElementById('collapse-icon');
+
+            if (collapseIcon.classList.contains('ri-arrow-right-s-fill')) {
+                collapseIcon.classList.remove('ri-arrow-right-s-fill');
+                collapseIcon.classList.add('ri-arrow-down-s-fill');
+            } else {
+                collapseIcon.classList.remove('ri-arrow-down-s-fill');
+                collapseIcon.classList.add('ri-arrow-right-s-fill');
+            }
+        }
+
+        function checkProjectName() {
+            const projectValue = document.getElementById('projectName').value;
+            const projectInput = document.getElementById('projectName');
+            const feedback = document.getElementById('project-feedback');
+            const submitButton = document.getElementById('projectSubmit');
+            const workId = "{{ workplace.id }}";
+
+            if (projectValue.length > 0) {
+                fetch(`/check_project/${projectValue}/${workId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        feedback.textContent = data.message;
+                        console.log(projectValue)
+                        if (projectValue.toLowerCase() === 'announcements') {
+                            feedback.textContent = 'Project name cannot be "announcements"';
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        } else if (data.available) {
+                            feedback.style.color = 'green';
+                            projectInput.classList.add('is-valid');
+                            projectInput.classList.remove('is-invalid');
+                            submitButton.disabled = false;
+                        } else {
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        }
+                        
+                    });
+            } else {
+                projectInput.classList.remove('is-valid', 'is-invalid');
+                feedback.textContent = '';
+            }
+        }
+
+        
+        function checkProjectStatus(project_id, item) {
+            const project_icon = item.querySelector('.project-icon');
+        
+            fetch(`/check_status/${project_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        project_icon.className = data.icon;
+                        project_icon.style.color = data.color;
+                        project_icon.setAttribute('data-bs-title', `Status: ${data.status}`);
+                        new bootstrap.Tooltip(project_icon); 
+                    }
+                });
+        }
+        
+
+        
+    </script>
+</body>
+
+</html>
+
+
+
+

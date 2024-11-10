@@ -7,12 +7,14 @@
 {% from "macros/workplaceModals.html" import createLink_modal %}
 {% from "macros/workplaceModals.html" import deleteMessage_modal %}
 {% from "macros/sidebar.html" import workplace_sidebar %}
+{% from "macros/sidebar.html" import user_workplace_sidebar %}
 {% from "macros/workplaceModals.html" import filePreviewModal %}
 {% from "macros/workplaceModals.html" import createTask_modal %}
 {% from "macros/workplaceModals.html" import submitTask_modal %}
 {% from "macros/workplaceModals.html" import deleteTask_modal %}
 {% from "macros/workplaceModals.html" import projectSettings_modal %}
 {% from "macros/workplaceModals.html" import projectStatus_modal %}
+{% from "macros/workplaceModals.html" import removeEmployee_modal %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -221,7 +223,11 @@
 </head>
 
 <body>
-    {{ workplace_sidebar(organization, current_user, svg_logo, workplace) }}
+    {% if current_user.id == organization.admin_id %}
+        {{ workplace_sidebar(organization, current_user, svg_logo, workplace) }}
+    {% else %}
+        {{ user_workplace_sidebar(organization, current_user, svg_logo, workplace) }}
+    {% endif %}
 
     <div id="workplace-nav" class="d-flex flex-column flex-shrink-0 link-dark shadow"  style="font-family: 'Poppins';" >
 
@@ -240,7 +246,11 @@
         </div>
 
         <ul class="list-unstyled fw-normal mt-2">
-            <li><a href="#" id="announcement-link" class="nav-link channel-tab tabActive fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="announcement"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
+            <li><a href="#" id="home-link" class="nav-link channel-tab tabActive fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="home"><i class="ri-home-5-line" style="margin-right: 7px;"></i> Home</a></li>
+        </ul>
+
+        <ul class="list-unstyled fw-normal">
+            <li><a href="#" id="announcement-link" class="nav-link channel-tab fs-6" data-channel-id="{{ workplace.id }}" data-conversation-type="announcement"><i class="ri-megaphone-line" style="margin-right: 7px;"></i> Announcements</a></li>
         </ul>
 
 
@@ -293,6 +303,118 @@
 
 
     <div class="workplace-content">
+
+
+        <div class="channel-main" id="channel-stream-content" style="display: none;">
+            <div class="position-relative mb-4">
+                <div class="workplace-banner" style="height: 240px; background-image: url('/static/{{ workplace.workplace_image }}'); background-size: cover; background-position: center; border-radius: 10px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 20px;">
+                        <h1 class="text-white mb-0" style="font-size: 2.5rem;">{{ workplace.workplace_name }}</h1>
+                        <p class="text-white-50 mb-0"><i class="ri-user-line me-2"></i>Manager: {{ workplace.manager.first_name }} {{ workplace.manager.last_name }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid p-0">
+                <!-- Workplace Stats -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-team-line me-2"></i>Employees</h6>
+                                <h2 class="card-title mb-0">{{ workplace_users|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-folder-line me-2"></i>Projects</h6>
+                                <h2 class="card-title mb-0">{{ projects|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-task-line me-2"></i>Active Tasks</h6>
+                                <h2 class="card-title mb-0">{{ active_tasks|length }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted"><i class="ri-calendar-line me-2"></i>Created</h6>
+                                <h3 class="card-title mb-0">{{ workplace.created_at.strftime('%B %d, %Y') }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Quick Actions -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3"><i class="ri-flashlight-line me-2"></i>Quick Actions</h5>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary" onclick="showModal(createProjectModal)">
+                                        <i class="ri-add-line me-2"></i>New Project
+                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="ri-team-line me-2"></i>Manage Employees
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="showModal(addEmployeeModal)">
+                                                <i class="ri-user-add-line me-2"></i>Add Employees
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="showModal(removeEmployeeModal)">
+                                                <i class="ri-user-unfollow-line me-2"></i>Remove Employees
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Recent Activity -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3"><i class="ri-time-line me-2"></i>Recent Activity</h5>
+                                <div class="activity-feed">
+                                    {% if projects %}
+                                        {% for project in projects[:5] %}
+                                        <div class="activity-item d-flex align-items-center border-bottom pb-3">
+                                            <div class="me-3">
+                                                <span class="badge bg-primary"><i class="ri-folder-line"></i></span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">{{ project.project_name }}</h6>
+                                                <small class="text-muted">Created on {{ project.created_at.strftime('%B %d, %Y') }}</small>
+                                            </div>
+                                            <div class="ms-auto">
+                                                <span class="badge bg-{{ 'success' if project.status == 'In Progress' else 'secondary' }}">
+                                                    {{ project.status }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted text-center mb-0">No recent activity</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <div class="mb-5 channel-main" id="channel-home-content" style="display: none;"></div>
         <div class="mb-5 channel-main" id="channel-content" style="display: none;"></div>
@@ -365,6 +487,7 @@
     {{ projectSettings_modal() }}
     {{ projectStatus_modal() }}
     {{ addEmployee_modal(workplace, non_employees) }}
+    {{ removeEmployee_modal(workplace_users, workplace) }}
     {{ createProject_modal(workplace) }}
     {{ code_modal(organization) }}
     {{ bootstrap_scripts() }}
@@ -374,7 +497,7 @@
 
         let currentConversationId;
         let channelId;
-        let conversationType = 'announcement';
+        let conversationType = 'home';
         let existingDateDividers = new Set();
         let isUserAtBottom = true;
         let isReply = false;
@@ -391,14 +514,18 @@
         const channelFileContent = document.getElementById('channel-file-content');
         const channelHomeContent = document.getElementById('channel-home-content');
         const channelTaskContent = document.getElementById('channel-task-content');
+        const channelStreamContent = document.getElementById('channel-stream-content');
 
         const workplaceInfo = document.getElementById('workplace-infoBar');
         const workplaceContent = document.querySelector('.workplace-content');
         const socket = io(); 
         const currentUserId = "{{ current_user.id }}";
+        const managerId = parseInt('{{ manager_id }}');
+        const adminId = parseInt('{{ admin_id }}');
 
 
         window.onload = function() {
+            console.log('ids',managerId, adminId)
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark' || savedTheme === 'light') {
                 document.documentElement.setAttribute('data-bs-theme', savedTheme);
@@ -470,38 +597,50 @@
                 channelId = tab.getAttribute('data-channel-id');
 
                 const isAnnouncementsTab = conversationType === 'announcement';
-                const infobarHTML = isAnnouncementsTab ? `
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages"  id="channel-messages" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
-                    </li>
+                if (conversationType === 'home') {
+                    workplaceInfobarNav.innerHTML = '';
+                    channelContent.innerHTML = '';
+                    channelFileContent.innerHTML = '';
+                    channelHomeContent.innerHTML = '';
+                    channelTaskContent.innerHTML = '';
+                    messageForm.style.display = 'none';
+                    workplaceContent.style.height = 'calc(100vh - 100px)';
+                    
+                    channelStreamContent.style.display = 'block';
+                } else {
+                    const infobarHTML = isAnnouncementsTab ? `
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-messages" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
-                    </li>
-                ` : `
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages"  id="channel-home" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-home-line"></i> Home</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                        </li>
+                    ` : `
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-home" aria-current="page" href="#" style="color: var(--bs-change-color);"><i class="ri-home-line"></i> Home</a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages"  id="channel-messages"  href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-messages"  href="#" style="color: var(--bs-change-color);"><i class="ri-chat-3-line"></i> Messages</a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages"  id="channel-tasks" href="#" style="color: var(--bs-change-color);"><i class="ri-stack-line"></i> Tasks</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages"  id="channel-tasks" href="#" style="color: var(--bs-change-color);"><i class="ri-stack-line"></i> Tasks</a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
-                    </li>
-                `;
+                        <li class="nav-item">
+                            <a class="nav-link channel-pages" id="channel-files" href="#" style="color: var(--bs-change-color);"><i class="ri-file-3-line "></i> Files</a>
+                        </li>
+                    `;
+                
+                    channelContent.innerHTML = '';
+                    channelFileContent.innerHTML = '';
+                    channelHomeContent.innerHTML = '';
+                    channelTaskContent.innerHTML = '';
 
-                channelContent.innerHTML = '';
-                channelFileContent.innerHTML = '';
-                channelHomeContent.innerHTML = '';
-                channelTaskContent.innerHTML = '';
-
-                workplaceInfobarNav.innerHTML = infobarHTML;    
+                    workplaceInfobarNav.innerHTML = infobarHTML;    
+                }
 
                 workplaceInfobarNav.querySelectorAll('.channel-pages').forEach(page => {
                     page.addEventListener('click', handlePageClick(page));
@@ -565,7 +704,9 @@
         
                 channelMain.forEach(item => {
                     item.style.display = 'none';
-                    item.innerHTML = '';
+                    if (item.id !== 'channel-stream-content') {
+                        item.innerHTML = '';
+                    }
                 });
 
                 if (pageId === 'channel-messages') {
@@ -654,6 +795,33 @@
         {{ home_script | safe }}
         // Home Functionality Js
 
+
+
+        document.getElementById('removeEmployeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkboxes = document.querySelectorAll('#employeeRemoveList input[type="checkbox"]:checked');
+            const selectedEmployees = Array.from(checkboxes).map(checkbox => checkbox.value);
+            
+            if (selectedEmployees.length === 0) {
+                console.error('Please select at least one employee to remove');
+                return;
+            }
+
+            socket.emit('remove_employees', {
+                workplace_id: '{{workplace.id}}',
+                employee_ids: selectedEmployees
+            }, (response) => {
+                if (response.status === 'success') {
+                    console.log('Employees removed successfully');
+                    $('#removeEmployeeModal').modal('hide');
+                    location.reload();
+                } else {
+                    console.error(response.message || 'Failed to remove employees');
+                }
+            });
+        });
+
         
         $(document).ready(function() {
             $('#employeeSelect').select2({
@@ -689,6 +857,45 @@
             const projectInput = document.getElementById('projectName');
             const feedback = document.getElementById('project-feedback');
             const submitButton = document.getElementById('projectSubmit');
+            const workId = "{{ workplace.id }}";
+
+            if (projectValue.length > 0) {
+                fetch(`/check_project/${projectValue}/${workId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        feedback.textContent = data.message;
+                        console.log(projectValue)
+                        if (projectValue.toLowerCase() === 'announcements') {
+                            feedback.textContent = 'Project name cannot be "announcements"';
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        } else if (data.available) {
+                            feedback.style.color = 'green';
+                            projectInput.classList.add('is-valid');
+                            projectInput.classList.remove('is-invalid');
+                            submitButton.disabled = false;
+                        } else {
+                            feedback.style.color = 'red';
+                            projectInput.classList.add('is-invalid');
+                            projectInput.classList.remove('is-valid');
+                            submitButton.disabled = true;
+                        }
+                        
+                    });
+            } else {
+                projectInput.classList.remove('is-valid', 'is-invalid');
+                feedback.textContent = '';
+            }
+        }
+
+
+        function checkProjectSettingsName() {
+            const projectValue = document.getElementById('projectSettingsName').value;
+            const projectInput = document.getElementById('projectSettingsName');
+            const feedback = document.getElementById('project-settings-feedback');
+            const submitButton = document.getElementById('projectSettingsSubmit');
             const workId = "{{ workplace.id }}";
 
             if (projectValue.length > 0) {

@@ -1,0 +1,272 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+{% from "macros/logo.html" import svg_logo %}
+{% from "macros/codeModal.html" import code_modal %}
+{% from "macros/sidebar.html" import user_sidebar %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>Organization Profile</title>
+    <style>        
+
+        .logo-fill {
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1 {
+            height: 35px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--bs-body-bg);;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    {{ user_sidebar(organization, current_user, svg_logo) }}
+
+    <div id="content" class="container p-5">
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <img src="data:image/png;base64,{{current_user.pfp | b64encode}}"  alt="Profile Picture" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                    </div>
+                    <div>
+                        <h2 class="mb-1">{{ profile.user.name }}</h2>
+                        <p class="text-muted mb-0">{{ profile.user.email }}</p>
+                        <p class="text-muted mb-0">@{{ profile.user.username }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Info Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Employment Information</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="mb-1 text-muted">Position</p>
+                        <h5>{{ profile.employee_info.position if profile.employee_info.position else 'Not set' }}</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1 text-muted">Salary</p>
+                        <h5>
+                            {% if profile.employee_info.salary %}
+                                ${{ "{:,.2f}".format(profile.employee_info.salary) }}
+                            {% else %}
+                                Not set
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1 text-muted">Date Joined</p>
+                        <h5>{{ profile.employee_info.date_joined.strftime('%B %d, %Y') }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Workplaces Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="ri-building-line me-2"></i>My Workplaces</h4>
+            </div>
+            <div class="card-body">
+                {% if profile.workplaces.managed or profile.workplaces.member_of %}
+                    <div class="list-group">
+                        {% for workplace in profile.workplaces.managed %}
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <h5 class="mb-1">{{ workplace.workplace_name }}</h5>
+                                        <span class="badge bg-success ms-2">Manager</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="ri-calendar-line me-1"></i>
+                                        Manager since: {{ workplace.created_at.strftime('%B %d, %Y') }}
+                                    </small>
+                                </div>
+                                <a href="/workplace/{{ workplace.id }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="ri-arrow-right-line"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for workplace in profile.workplaces.member_of if workplace.id not in profile.workplaces.managed|map(attribute='id')|list %}
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <h5 class="mb-1">{{ workplace.workplace_name }}</h5>
+                                        <span class="badge bg-info ms-2">Member</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="ri-calendar-line me-1"></i>
+                                        Member since: {{ workplace.created_at.strftime('%B %d, %Y') }}
+                                    </small>
+                                </div>
+                                <a href="/user_workplace/{{ workplace.id }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="ri-arrow-right-line"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="ri-building-line display-4 text-muted mb-3"></i>
+                        <p class="text-muted">You are not a member of any workplaces yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+       <!-- Active Tasks Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-warning text-dark d-flex align-items-center">
+                <i class="ri-task-line me-2 fs-5"></i>
+                <h4 class="mb-0">Assigned Tasks</h4>
+            </div>
+            <div class="card-body">
+                {% if profile.active_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="ri-file-list-line me-2"></i>Task Name</th>
+                                    <th><i class="ri-folder-line me-2"></i>Project</th>
+                                    <th><i class="ri-calendar-line me-2"></i>Due Date</th>
+                                    <th><i class="ri-flag-line me-2"></i>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in profile.active_tasks %}
+                                <tr class="align-middle">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="fw-medium">{{ task.task_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-primary">{{ task.project.project_name }}</span>
+                                    </td>
+                                    <td>
+                                        {% set due_date = task.due_date %}
+                                        {% if due_date < now %}
+                                            <span class="text-danger">
+                                                <i class="ri-error-warning-line me-1"></i>
+                                                Overdue: {{ due_date.strftime('%B %d, %Y') }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">
+                                                <i class="ri-time-line me-1"></i>
+                                                {{ due_date.strftime('%B %d, %Y') }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.status == 'not_started' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="ri-checkbox-blank-circle-line me-1"></i>
+                                                Not Started
+                                            </span>
+                                        {% elif task.status == 'in_progress' %}
+                                            <span class="badge bg-primary">
+                                                <i class="ri-loader-4-line me-1"></i>
+                                                In Progress
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="ri-checkbox-circle-line me-1"></i>
+                                                Completed
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="ri-task-line display-4 text-muted mb-3"></i>
+                        <p class="text-muted">No active tasks assigned</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contributions Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="ri-bar-chart-line me-2"></i>Contributions</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="ri-message-3-line fs-3 text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ profile.contributions.messages_sent }}</h3>
+                                <span class="text-muted">Messages Sent</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="ri-file-upload-line fs-3 text-success"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ profile.contributions.files_uploaded }}</h3>
+                                <span class="text-muted">Files Uploaded</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="ri-checkbox-circle-line fs-3 text-warning"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ profile.contributions.completed_tasks }}</h3>
+                                <span class="text-muted">Tasks Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="ri-time-line fs-3 text-info"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ profile.contributions.active_tasks_count }}</h3>
+                                <span class="text-muted">Active Tasks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    {{ bootstrap_scripts() }}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

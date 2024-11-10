@@ -70,8 +70,10 @@ class Project(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
 
 
-    tasks = db.relationship('Task', backref='project', lazy=True)
-    files = db.relationship('FileAttachment', backref='project', lazy=True)
+    # In Project model
+    tasks = db.relationship('Task', backref='project', lazy=True, cascade='all, delete-orphan')
+    files = db.relationship('FileAttachment', backref='project', lazy=True, cascade='all, delete-orphan')
+    conversation = db.relationship('Conversation', backref='project', lazy=True, cascade='all, delete-orphan')
 
 # Tasks Table
 class Task(db.Model):
@@ -87,6 +89,14 @@ class Task(db.Model):
 
     files = db.relationship('FileAttachment', backref='task', lazy=True)
     def to_dict(self):
+        assigned_user = None
+        if self.assigned_user:  
+            assigned_user = {
+                'id': self.assigned_user.id,
+                'username': self.assigned_user.username,
+                'pfp': base64.b64encode(self.assigned_user.pfp).decode('utf-8')
+            }
+
         return {
             'id': self.id,
             'task_name': self.task_name,
@@ -97,7 +107,8 @@ class Task(db.Model):
             'assigned_user_id': self.assigned_user_id,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'files': [file.to_dict() for file in self.files]
+            'files': [file.to_dict() for file in self.files],
+            'user': assigned_user
         }
 
 # Employee Info Table
@@ -194,6 +205,7 @@ class Message(db.Model):
                     'content': original_reply.original_message.content,
                     'timestamp': original_reply.original_message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
                     'user': {
+                        'id': original_reply.original_message.sender.id,
                         'username': original_reply.original_message.sender.username,
                         'pfp': base64.b64encode(original_reply.original_message.sender.pfp).decode('utf-8')
                     }
@@ -231,6 +243,7 @@ class Message(db.Model):
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'is_reply': self.is_reply, 
             'user': {
+                'id': self.sender.id,
                 'username': self.sender.username,
                 'pfp': base64.b64encode(self.sender.pfp).decode('utf-8')
             },
@@ -306,6 +319,7 @@ class FileAttachment(db.Model):
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
             'user': {
+                'id': self.uploader.id,
                 'username': self.uploader.username,
             }
         }
@@ -331,3 +345,4 @@ class User(db.Model, UserMixin):
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy=True)
     uploaded_files = db.relationship('FileAttachment', backref='uploader', lazy=True)
     employees = db.relationship('Employee_Info', back_populates='user', foreign_keys=[Employee_Info.user_id], lazy='dynamic')
+    tasks_assigned = db.relationship('Task', backref='assigned_user', lazy=True, foreign_keys='Task.assigned_user_id')
