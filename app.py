@@ -16,7 +16,7 @@ from entities.project import projects as proj_bp
 from datetime import datetime
 
 
-# Initialize Flask app
+# Initialize app parameters
 app = Flask(__name__)
 folderPath = os.path.dirname(os.path.abspath(__file__))
 app.config["FOLDER_PATH"] = folderPath
@@ -35,7 +35,7 @@ socketio.init_app(app)
 oauth = OAuth(app)
 
 
-# Register OAuth providers
+# Register OAuth google
 google = oauth.register(
     name='google',
     client_id=app.config['GOOGLE_CLIENT_ID'],
@@ -85,6 +85,6 @@ app.register_blueprint(msg_bp)
 app.register_blueprint(task_bp)
 app.register_blueprint(proj_bp)
 
-# Run the app
+
 if __name__ == '__main__':
     socketio.run(app, debug=True)

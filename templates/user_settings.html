@@ -1,6 +1,8 @@
 {% from "macros/imports.html" import head_imports %}
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
+{% from "macros/sidebar.html" import admin_sidebar %}
+{% from "macros/sidebar.html" import user_sidebar %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,6 +10,20 @@
     {{ head_imports() }}
     <title>User Settings</title>
     <style>
+        .logo-fill {
+            fill: var(--secondary-color);
+        }
+
+        #Layer_1 {
+            height: 35px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        .logo-bg{
+            fill: var(--bs-body-bg);;
+        }
+
         .profile-picture {
             width: 150px;
             height: 150px;
@@ -15,13 +31,29 @@
             object-fit: cover;
         }
         .settings-container {
-            max-width: 800px;
             margin: 2rem auto;
         }
     </style>
 </head>
 <body>
-    <div class="container settings-container">
+    {% if current_user.id == organization.admin_id %}
+        {{ admin_sidebar(organization, current_user, svg_logo) }}
+    {% else %}
+        {{ user_sidebar(organization, current_user, svg_logo) }}
+    {% endif %}
+
+    <div id="content" class="container settings-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         <h2 class="mb-4">Account Settings</h2>
         
         <ul class="nav nav-tabs mb-4">
@@ -32,7 +64,7 @@
                 <a class="nav-link" data-bs-toggle="tab" href="#security">Security</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#organizations">Organizations</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#organizations">Organization</a>
             </li>
         </ul>
 
@@ -52,13 +84,13 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}"  data-current-username="{{ current_user.username }}" required>
                         <div id="username-feedback" class="form-text"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" data-current-email="{{ current_user.email }}" required>
                         <div id="email-feedback" class="form-text"></div>
                     </div>
 
@@ -75,34 +107,41 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" id="submit-button">Save Changes</button>
+                    <button type="submit" class="btn btn-primary submit-button" id="profile-submit-button">Save Changes</button>
                 </form>
             </div>
 
             <!-- Security Tab -->
             <div class="tab-pane fade" id="security">
                 <form id="password-form" method="POST" action="{{ url_for('dashboard.update_password', organization_id=organization.id) }}">
+                    {% if current_user.password_hash %}
                     <div class="mb-3">
                         <label class="form-label">Current Password</label>
                         <input type="password" class="form-control" id="current_password" name="current_password" required>
                     </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="ri-information-line"></i> Please set your password
+                    </div>
+                    {% endif %}
 
                     <div class="mb-3">
-                        <label class="form-label">New Password</label>
+                        <label class="form-label">{% if current_user.password_hash %}New {% endif %}Password</label>
                         <input type="password" class="form-control" id="password" name="new_password" required>
                         <div id="password-feedback" class="form-text"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Confirm New Password</label>
+                        <label class="form-label">Confirm {% if current_user.password_hash %}New {% endif %}Password</label>
                         <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                         <div id="confirm-password-feedback" class="form-text"></div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" id="password-submit-button">Update Password</button>
+                    <button type="submit" class="btn btn-primary submit-button" id="password-submit-button">
+                        {% if current_user.password_hash %}Update{% else %}Set{% endif %} Password
+                    </button>
                 </form>
             </div>
-
             <!-- Organizations Tab -->
             <div class="tab-pane fade" id="organizations">
                     <div class="list-group">
@@ -143,6 +182,7 @@
     </div>
 
     {{ bootstrap_scripts() }}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
     <script>
         document.getElementById('profile-upload').addEventListener('change', function(e) {
             if (e.target.files && e.target.files[0]) {
@@ -184,12 +224,20 @@
         // Username Valisation
         document.getElementById('username').addEventListener('input', function () {
             const username = this.value;
+            const currentUsername = this.dataset.currentUsername;
             const feedback = document.getElementById('username-feedback');
             const usernameInput = document.getElementById('username');
 
             const regExp = /^[a-z0-9]+$/;
             const minLength = 5;
             const maxLength = 20;
+
+            if (username === currentUsername) {
+                feedback.textContent = '';
+                usernameInput.classList.remove('is-invalid', 'is-valid');
+                checkInvalidFields();
+                return;
+            }
 
             if (username.length > 0) {
                 if (username.length < minLength || username.length > maxLength) {
@@ -313,29 +361,39 @@
         });
 
         // Invalid Field Checker
-        function checkInvalidFields() {
-            if (document.querySelectorAll('.is-invalid').length > 0) {
-                document.getElementById('submit-button').disabled = true;
-            } else {
-                document.getElementById('submit-button').disabled = false;
+        function checkInvalidFields(form) {
+            const invalidFields = form.querySelectorAll('.is-invalid');
+            const submitButton = form.querySelector('.submit-button');
+            if (submitButton) {
+                submitButton.disabled = invalidFields.length > 0;
             }
         }
-
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', checkInvalidFields);
+        
+        document.querySelectorAll('form').forEach(form => {
+            form.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    checkInvalidFields(input.closest('form'));
+                });
+            });
         });
 
 
         // Email validation
         document.getElementById('email').addEventListener('input', function () {
             const email =  this.value;
+            const currentEmail = this.dataset.currentEmail;
             const emailInput = document.getElementById('email');
             const feedback = document.getElementById('email-feedback');
-            const emailButton = document.getElementById('emailCont-button');
+
+            if (email === currentEmail) {
+                feedback.textContent = '';
+                emailInput.classList.remove('is-invalid', 'is-valid');
+                checkInvalidFields();
+                return;
+            }
 
             if (email.length > 0) {
                 if (!emailInput.validity.valid) {
-                    emailButton.disabled = true;
                     feedback.textContent = 'It looks like that isn’t a valid email address.';
                     feedback.style.color = 'red';
                     emailInput.classList.add('is-invalid');
@@ -352,14 +410,12 @@
                             feedback.style.color = 'green';
                             emailInput.classList.add('is-valid');
                             emailInput.classList.remove('is-invalid');
-                            emailButton.disabled = false;
                             checkInvalidFields(); 
                         } else {
                             feedback.textContent = 'Email is already in use';
                             feedback.style.color = 'red';
                             emailInput.classList.add('is-invalid');
                             emailInput.classList.remove('is-valid');
-                            emailButton.disabled = true;
                             checkInvalidFields(); 
                         }
                     });

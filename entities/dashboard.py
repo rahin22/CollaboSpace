@@ -274,15 +274,29 @@ def update_profile(organization_id):
 @login_required
 def update_password(organization_id):
     if request.method == 'POST':
-        if  pbkdf2_sha256.verify(request.form['current_password']):
-            if request.form['new_password'] == request.form['confirm_password']:
-                current_user.password_hash = pbkdf2_sha256.hash(request.form['new_password'])
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        if not current_user.password_hash:
+            if new_password == confirm_password:
+                current_user.password_hash = pbkdf2_sha256.hash(new_password)
+                db.session.commit()
+                flash('Password set successfully', 'success')
+            else:
+                flash('Passwords do not match', 'error')
+            return redirect(url_for('dashboard.settings', organization_id=organization_id))
+
+        current_password = request.form['current_password']
+        if pbkdf2_sha256.verify(current_password, current_user.password_hash):
+            if new_password == confirm_password:
+                current_user.password_hash = pbkdf2_sha256.hash(new_password)
                 db.session.commit()
                 flash('Password updated successfully', 'success')
             else:
                 flash('New passwords do not match', 'error')
         else:
             flash('Current password is incorrect', 'error')
+            
     return redirect(url_for('dashboard.settings', organization_id=organization_id))
 
 @dashboard.route('/leave_organization/<int:org_id>', methods=['POST'])
@@ -292,10 +306,7 @@ def leave_organization(org_id):
     if org.admin_id == current_user.id:
         return jsonify({'error': 'Administrators cannot leave their organization'}), 400
     
-    employee = Employee_Info.query.filter_by(
-        user_id=current_user.id,
-        organization_id=org_id
-    ).first()
+    employee = Employee_Info.query.filter_by(user_id=current_user.id, organization_id=org_id).first()
     
     if employee:
         db.session.delete(employee)
