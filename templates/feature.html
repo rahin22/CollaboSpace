@@ -1,0 +1,375 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>Demo Dashboard - Collabospace</title>
+    <style>
+        .demo-container {
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+        }
+
+        .feature-locked {
+            position: relative;
+            cursor: not-allowed;
+        }
+
+        .feature-locked::after {
+            content: "Sign up to unlock";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 8px;
+        }
+
+        .feature-locked:hover::after {
+            opacity: 1;
+        }
+
+        .demo-card {
+            background: var(--bs-body-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--bs-border-color);
+        }
+
+        .demo-nav {
+            background: var(--secondary-color);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--search-bar-color);
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            color: var(--secondary-color);
+        }
+    </style>
+
+    <title>User Guide & Features - Collabospace</title>
+    <style>
+        .guide-container {
+            font-family: 'Poppins', sans-serif;
+            padding: 40px 20px;
+        }
+
+        .guide-hero {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #4a90e2 100%);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+
+        .guide-section {
+            background: var(--bs-body-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid var(--bs-border-color);
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .guide-nav {
+            position: sticky;
+            top: 20px;
+            padding: 20px;
+            background: var(--search-bar-color);
+            border-radius: 8px;
+        }
+
+        .guide-nav a {
+            color: var(--bs-body-color);
+            text-decoration: none;
+            display: block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .guide-nav a:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .demo-container {
+            margin-top: 60px;
+        }
+
+        .feature-locked {
+            position: relative;
+            cursor: not-allowed;
+        }
+
+        .feature-locked::after {
+            content: "Sign up to unlock";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 8px;
+        }
+
+        .feature-locked:hover::after {
+            opacity: 1;
+        }
+
+        .screenshot {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top" style="background-color: var(--secondary-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/" style="color: var(--bg-color);">
+                <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="Logo" style="height: 40px;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home" style="color: var(--bg-color);">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/feature" style="color: var(--bg-color);">Features</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--bg-color);">Resources</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/policies">Our Policies</a></li>
+                            <li><a class="dropdown-item" href="/contact">Contact Us</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/feature">Demo</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex" style="gap: 10px;">
+                    <a href="/login" class="btn btn-outline-light">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Get Started</a>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="demo-container">
+        <div class="container">
+            <!-- Demo Navigation -->
+            <div class="demo-nav">
+                <h4>Demo Workspace: Marketing Team</h4>
+                <small>Experience a preview of Collabospace's features</small>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="ri-team-line mb-2"></i>
+                        <h5>Team Members</h5>
+                        <h3>12</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="ri-task-line mb-2"></i>
+                        <h5>Active Projects</h5>
+                        <h3>4</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="ri-message-3-line mb-2"></i>
+                        <h5>Messages</h5>
+                        <h3>128</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="ri-file-list-line mb-2"></i>
+                        <h5>Files Shared</h5>
+                        <h3>45</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Projects Preview -->
+                <div class="col-md-6">
+                    <div class="demo-card">
+                        <h5>Recent Projects</h5>
+                        <div class="list-group feature-locked">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Website Redesign</h6>
+                                        <small class="text-muted">8 tasks • 4 members</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">In Progress</span>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Q4 Marketing Campaign</h6>
+                                        <small class="text-muted">12 tasks • 6 members</small>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill">Active</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Preview -->
+                <div class="col-md-6">
+                    <div class="demo-card">
+                        <h5>Recent Messages</h5>
+                        <div class="list-group feature-locked">
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Sarah Johnson</h6>
+                                    <small class="text-muted">3 mins ago</small>
+                                </div>
+                                <p class="mb-1">Updated the design mockups for review.</p>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Mike Chen</h6>
+                                    <small class="text-muted">1 hour ago</small>
+                                </div>
+                                <p class="mb-1">Team meeting scheduled for tomorrow at 10 AM.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Preview -->
+            <div class="demo-card mt-4">
+                <h5>Current Tasks</h5>
+                <div class="table-responsive feature-locked">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Assigned To</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Create social media content</td>
+                                <td>Emily Wong</td>
+                                <td>Oct 15</td>
+                                <td><span class="badge bg-warning">In Progress</span></td>
+                            </tr>
+                            <tr>
+                                <td>Review analytics report</td>
+                                <td>John Smith</td>
+                                <td>Oct 18</td>
+                                <td><span class="badge bg-info">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="text-center mt-5">
+                <h3>Ready to experience the full power of Collabospace?</h3>
+                <p class="lead mb-4">Sign up now to unlock all features and boost your team's productivity</p>
+                <a href="/register" class="btn btn-primary btn-lg">Sign Up Now!</a>
+            </div>
+        </div>
+    </div>
+
+
+    {{ bootstrap_scripts() }}
+    
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.guide-nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Highlight active section in nav
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.guide-section');
+            const navLinks = document.querySelectorAll('.guide-nav a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 60) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

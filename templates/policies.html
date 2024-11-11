@@ -1,0 +1,109 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>Our Policies - Collabospace</title>
+    <style>
+        .policy-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .policy-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--bs-body-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .policy-section h2 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .policy-section p {
+            line-height: 1.6;
+            color: var(--bs-body-color);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top" style="background-color: var(--secondary-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/" style="color: var(--bg-color);">
+                <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="Logo" style="height: 40px;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home" style="color: var(--bg-color);">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manual" style="color: var(--bg-color);">Manual</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--bg-color);">Resources</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item active" href="/policies">Our Policies</a></li>
+                            <li><a class="dropdown-item" href="/contact">Contact Us</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/feature">Demo</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex" style="gap: 10px;">
+                    <a href="/login" class="btn btn-outline-light">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Get Started</a>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Policy Content -->
+    <div class="policy-container">
+        <h1 class="text-center mb-5" style="font-family: 'Poppins', sans-serif; color: var(--secondary-color);">Our Policies</h1>
+
+        <div class="policy-section">
+            <h2>Privacy Policy</h2>
+            <p>At Collabospace, we take your privacy seriously. We collect and process personal data only for the purpose of providing and improving our collaboration services. Your data is encrypted and stored securely, and we never share it with third parties without your explicit consent.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Terms of Service</h2>
+            <p>By using Collabospace, you agree to our terms of service which ensure a safe and productive environment for all users. We maintain high standards of professional conduct and expect all users to respect intellectual property rights and maintain confidentiality of shared information.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Data Security</h2>
+            <p>We implement industry-standard security measures to protect your data. This includes end-to-end encryption for messages, secure file storage, and regular security audits. Our platform is compliant with GDPR and other relevant data protection regulations.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Fair Usage</h2>
+            <p>To ensure optimal service for all users, we implement fair usage policies. This includes reasonable limits on storage, bandwidth, and API calls. We monitor system usage to prevent abuse and maintain service quality for everyone.</p>
+        </div>
+
+        <div class="policy-section">
+            <h2>Updates and Changes</h2>
+            <p>We reserve the right to update these policies as needed to reflect changes in our services or legal requirements. Users will be notified of significant changes, and continued use of the platform constitutes acceptance of updated policies.</p>
+        </div>
+    </div>
+
+    {{ bootstrap_scripts() }}
+</body>
+</html>

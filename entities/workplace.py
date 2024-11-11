@@ -13,6 +13,7 @@ from authlib.integrations.flask_client import OAuth
 from sqlalchemy import func
 from datetime import date, datetime
 from flask_socketio import SocketIO, join_room
+from sqlalchemy import or_
 
 wrkplace = Blueprint('wrkplace', __name__)
 
@@ -259,7 +260,6 @@ def check_task(task_name, project_id):
 def get_project_home(project_id):
     project = Project.query.filter_by(id=project_id).first()
     
-    # Get task statistics
     tasks = Task.query.filter_by(project_id=project_id).all()
     current_date = datetime.now()
     print('current_date',current_date)
@@ -281,13 +281,10 @@ def get_project_home(project_id):
     upcoming_tasks = Task.query.filter(Task.project_id == project_id,Task.status != 'completed').order_by(Task.due_date.asc()).limit(3).all()
     print('upcoming',upcoming_tasks)
 
-    
-    # Get recent activity
     files = FileAttachment.query.filter_by(project_id=project_id).order_by(FileAttachment.created_at.desc()).limit(2).all()
     conversation = Conversation.query.filter_by(project_id=project_id).first()
     recent_messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.desc()).limit(2).all()
     
-    # Get assigned team members
     assigned_tasks = Task.query.filter(Task.project_id == project_id, Task.assigned_user_id.isnot(None)).all()
     team_members = set(task.assigned_user_id for task in assigned_tasks)
     
@@ -336,3 +333,169 @@ def handle_remove_employees(data):
         db.session.rollback()
         print(f"Error removing employees: {str(e)}")
         return {'status': 'error', 'message': str(e)}
+
+
+@wrkplace.route('/api/workplace-search')
+def workplace_search():
+    query = request.args.get('q', '').lower()
+    workplace_id = request.args.get('workplace_id')
+    
+    results = []
+    
+    messages = (Message.query
+               .join(Conversation)
+               .join(User, Message.sender_id == User.id)
+               .filter(
+                   Conversation.workplace_id == workplace_id,
+                   Message.content.ilike(f'%{query}%')
+               ).all())
+    
+    for msg in messages:
+        results.append({
+            'type': 'message',
+            'id': msg.id,
+            'title': msg.content[:100],
+            'location': f'Conversation: {msg.conversation.title}',
+            'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M'),
+            'author': msg.sender.username,
+            'url': f'/workplace/{workplace_id}/conversation/{msg.conversation_id}#message-{msg.id}'
+        })
+
+    files = (FileAttachment.query
+            .join(Message)
+            .join(Conversation)
+            .filter(
+                Conversation.workplace_id == workplace_id,
+                FileAttachment.filename.ilike(f'%{query}%')
+            ).all())
+    
+    for file in files:
+        results.append({
+            'type': 'file',
+            'id': file.id,
+            'title': file.filename,
+            'location': f'Conversation: {file.message.conversation.title}',
+            'timestamp': file.created_at.strftime('%Y-%m-%d %H:%M'),
+            'author': file.uploader.username,
+            'url': f'/workplace/{workplace_id}/files/{file.id}'
+        })
+
+    tasks = (Task.query
+            .join(Project)
+            .filter(
+                Project.workplace_id == workplace_id,
+                or_(
+                    Task.task_name.ilike(f'%{query}%'),
+                    Task.description.ilike(f'%{query}%')
+                )
+            ).all())
+    
+    for task in tasks:
+        results.append({
+            'type': 'task', 
+            'id': task.id,
+            'title': task.task_name,
+            'location': f'Project: {task.project.project_name}',
+            'timestamp': task.created_at.strftime('%Y-%m-%d %H:%M'),
+            'author': task.assigned_user.username if task.assigned_user else 'Unassigned',
+            'url': f'/workplace/{workplace_id}/project/{task.project_id}/task/{task.id}'
+        })
+
+    projects = Project.query.filter(
+        Project.workplace_id == workplace_id,
+        or_(
+            Project.project_name.ilike(f'%{query}%'),
+            Project.description.ilike(f'%{query}%')
+        )
+    ).all()
+
+    for project in projects:
+        results.append({
+            'type': 'project',
+            'id': project.id,
+            'title': project.project_name,
+            'location': 'Projects',
+            'timestamp': project.created_at.strftime('%Y-%m-%d %H:%M'),
+            'url': f'/workplace/{workplace_id}/project/{project.id}'
+        })
+
+    results.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    return jsonify(results)
+
+
+@wrkplace.route('/workplace/<int:workplace_id>/settings')
+@login_required
+def workplace_settings(workplace_id):
+    workplace = Workplace.query.get_or_404(workplace_id)
+    organization = Organization.query.get(workplace.organization_id)
+    employees = User_Workplace.query.filter_by(workplace_id=workplace_id).all()
+    
+    if current_user.id != organization.admin_id and current_user.id != workplace.workplace_manager:
+        abort(403)
+        
+    return render_template('workplacesettings.html', workplace=workplace, organization=organization, employees=employees, current_user=current_user)
+
+@wrkplace.route('/workplace/<int:workplace_id>/update_info', methods=['POST'])
+@login_required
+def update_workplace_info(workplace_id):
+    workplace = Workplace.query.get_or_404(workplace_id)
+    organization = Organization.query.get(workplace.organization_id)
+    
+    if current_user.id != organization.admin_id:
+        abort(403)
+        
+    workplace.workplace_name = request.form.get('workplace_name')
+    workplace.description = request.form.get('description')
+    
+    db.session.commit()
+    flash('Workplace information updated successfully', 'success')
+    return redirect(url_for('wrkplace.workplace_settings', workplace_id=workplace_id))
+
+
+
+@wrkplace.route('/workplace/<int:workplace_id>/update_access', methods=['POST'])
+@login_required
+def update_workplace_access(workplace_id):
+    workplace = Workplace.query.get_or_404(workplace_id)
+    organization = Organization.query.get(workplace.organization_id)
+    
+    if current_user.id != organization.admin_id:
+        abort(403)
+        
+    workplace.workplace_manager = request.form.get('workplace_manager', type=int)
+    
+    db.session.commit()
+    flash('Workplace access updated successfully', 'success')
+    return redirect(url_for('wrkplace.workplace_settings', workplace_id=workplace_id))
+
+
+
+@wrkplace.route('/workplace/<int:workplace_id>/delete', methods=['POST'])
+@login_required
+def delete_workplace(workplace_id):
+    workplace = Workplace.query.get_or_404(workplace_id)
+    organization = Organization.query.get(workplace.organization_id)
+    
+    if current_user.id != organization.admin_id:
+        abort(403)
+        
+    User_Workplace.query.filter_by(workplace_id=workplace_id).delete()
+    
+    conversations = Conversation.query.filter_by(workplace_id=workplace_id).all()
+    for conv in conversations:
+        Message.query.filter_by(conversation_id=conv.id).delete()
+        ConversationParticipants.query.filter_by(conversation_id=conv.id).delete()
+
+    Conversation.query.filter_by(workplace_id=workplace_id).delete()
+    
+    projects = Project.query.filter_by(workplace_id=workplace_id).all()
+    for project in projects:
+        Task.query.filter_by(project_id=project.id).delete()
+    Project.query.filter_by(workplace_id=workplace_id).delete()
+    
+    db.session.delete(workplace)
+    db.session.commit()
+    
+    flash('Workplace deleted successfully', 'success')
+    return redirect(url_for('dashboard.admin_dashboard', organization_id=organization.id))

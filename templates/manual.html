@@ -1,0 +1,255 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>User Manual - Collabospace</title>
+    <style>
+        .manual-container {
+            font-family: 'Poppins', sans-serif;
+            padding: 40px 20px;
+        }
+
+        .manual-nav {
+            position: sticky;
+            top: 20px;
+            background: var(--search-bar-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .manual-nav a {
+            display: block;
+            padding: 8px 15px;
+            color: var(--bs-body-color);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .manual-nav a:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .manual-section {
+            background: var(--bs-body-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .screenshot {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top" id="index-nav">
+        <div class="container-fluid">
+            <img src="{{ url_for('static', filename= 'assets/images/' + 'logo.png') }}" class="img-fluid" style="height: 50px;">
+            <a class="navbar-brand fw-bold" href="home" style="color: var(--bg-color);">Collabospace </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+                aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="home" style="color: var(--bg-color);">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manual" style="color: var(--bg-color);">Manual</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--bg-color);">Resources</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/policies">Our Policies</a></li>
+                            <li><a class="dropdown-item" href="/contact">Contact Us</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/feature">Demo</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex" style="gap: 10px;">
+                    <a href="/login" class="btn btn-outline-light">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Get Started</a>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="manual-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="manual-nav">
+                        <h5 class="mb-3">Manual Contents</h5>
+                        <a href="#getting-started">Getting Started</a>
+                        <a href="#organizations">Organizations</a>
+                        <a href="#workplaces">Workplaces</a>
+                        <a href="#projects">Projects & Tasks</a>
+                        <a href="#collaboration">Team Collaboration</a>
+                        <a href="#files">File Management</a>
+                        <a href="#security">Security & Settings</a>
+                    </div>
+                </div>
+
+                <div class="col-md-9" data-bs-spy="scroll" >
+                    <div id="introduction" class="manual-section">
+                        <h2>Welcome to Collabospace</h2>
+                        <p>Collabospace is a comprehensive workplace collaboration platform designed to help teams work together efficiently. This manual will guide you through all features and functionalities.</p>
+                    </div>
+
+                    <div id="getting-started" class="manual-section">
+                        <h2>Getting Started</h2>
+                        <div class="feature-card">
+                            <i class="ri-user-add-line feature-icon"></i>
+                            <h4>Account Creation</h4>
+                            <p><span class="small">The basis of the application begins with account creation. To get started <a href="/register">register</a> an account either through direct registration with the application, or use the Google OAuth sign up with your Google Account to avoid manual setup.</span></p>
+                            <img src="{{ url_for('static', filename='assets/images/signup.png') }}" alt="Registration Process" class="screenshot">
+                        </div>
+                    </div>
+
+                    <div id="organizations" class="manual-section">
+                        <h2>Joining & Creating Organisations</h2>
+                        <p>In Collbospace organisations are the top level entities, users may join existing organisations or create their own.</p>
+
+                        <div class="feature-card">
+                            <i class="ri-team-line feature-icon"></i>
+                            <h4>Joining an Organisation</h4>
+                            <p>To join an existing organisation, you'll need an organisation code from an administrator.</p>
+                            <ol>
+                                <li>Click on the employee tab on the entry page upon opening the application</li>
+                                <li>Click the "Join Organisation" Button</li>
+                                <li>Enter the Organisation Join Code</li>
+                                <li>The code will be validated and then you can submit to join the organisation</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <i class="ri-information-line"></i>
+                                <span>Contact your organisation administrator to obtain the join code.</span>
+                            </div>
+                            <img src="{{ url_for('static', filename='assets/images/join_org.png') }}" alt="Join Organisation Process" class="screenshot">
+                        </div>
+
+                        <div class="feature-card">
+                            <i class="ri-building-line feature-icon"></i>
+                            <h4>Creating an Organisation</h4>
+                            <p class="mt-3">If you want to create your own organisation, simply switch to the admin tab on the entry page and follow the steps given for creating your own organisation.</p>
+                            <img src="{{ url_for('static', filename='assets/images/create_org.png') }}" alt="Create Organisation Process" class="screenshot">
+                        </div>
+                    
+
+                    </div>
+
+                    <div id="workplaces" class="manual-section">
+                        <h2>Workplace Management</h2>
+                        <div class="feature-card">
+                            <i class="ri-team-line feature-icon"></i>
+                            <h4>Creating & Managing Workplaces</h4>
+                            <p>Once you have either created or joined an organisation,  the collaboration begins in workplaces. Workplaces are teams in which employees collaborate on projects through the use of the Collabospace project management suite.</p>
+                            <p> If you have just created an organisation, you must first have at least one employee join your organisation so you can set them as your workplace manager. To create a workplace go to the organisation dashboard and follow the prompts. </p>
+                            <img src="{{ url_for('static', filename='assets/images/create_work.png') }}" alt="Create Organisation Process" class="screenshot">
+                        </div>
+                    </div>
+
+                    <div id="projects" class="manual-section">
+                        <h2>Projects & Tasks</h2>
+                        <div class="feature-card">
+                            <i class="ri-task-line feature-icon"></i>
+                            <h4>Project Management</h4>
+                            <p>Create and track projects efficiently:</p>
+                            <ul>
+                                <li>Project creation and setup</li>
+                                <li>Task assignment and tracking</li>
+                                <li>Progress monitoring</li>
+                                <li>Team collaboration tools</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="collaboration" class="manual-section">
+                        <h2>Team Collaboration</h2>
+                        <div class="feature-card">
+                            <i class="ri-chat-3-line feature-icon"></i>
+                            <h4>Communication Tools</h4>
+                            <p>Utilize our communication features:</p>
+                            <ul>
+                                <li>Real-time messaging</li>
+                                <li>File sharing</li>
+                                <li>Video meetings</li>
+                                <li>Team announcements</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="files" class="manual-section">
+                        <h2>File Management</h2>
+                        <div class="feature-card">
+                            <i class="ri-file-list-3-line feature-icon"></i>
+                            <h4>Document Handling</h4>
+                            <p>Learn about our file management system:</p>
+                            <ul>
+                                <li>File upload and storage</li>
+                                <li>Version control</li>
+                                <li>File sharing permissions</li>
+                                <li>Document organization</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="security" class="manual-section">
+                        <h2>Security & Settings</h2>
+                        <div class="feature-card">
+                            <i class="ri-shield-check-line feature-icon"></i>
+                            <h4>Security Features</h4>
+                            <p>Understand our security measures:</p>
+                            <ul>
+                                <li>Access control</li>
+                                <li>Data encryption</li>
+                                <li>Privacy settings</li>
+                                <li>Account security</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ bootstrap_scripts() }}
+    
+    <script>
+        document.querySelectorAll('.manual-nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

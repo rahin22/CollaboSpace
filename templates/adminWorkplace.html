@@ -237,7 +237,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser1">
                 <li><a class="dropdown-item" href="#" onclick="showModal(createProjectModal)">New project...</a></li>
-                <li><a class="dropdown-item" href="#">Workplace Settings</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('wrkplace.workplace_settings', workplace_id=workplace.id) }}">Workplace Settings</a></li>
             </ul>
 
             <a href="#" class="nav-link link-dark" title="" onclick="showModal(addEmployeeModal)" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Add Employees">
@@ -604,7 +604,7 @@
                     channelHomeContent.innerHTML = '';
                     channelTaskContent.innerHTML = '';
                     messageForm.style.display = 'none';
-                    workplaceContent.style.height = 'calc(100vh - 100px)';
+                    workplaceContent.style.height = 'calc(100vh - 150px)';
                     
                     channelStreamContent.style.display = 'block';
                 } else {
@@ -794,6 +794,97 @@
         // Home Functionality Js
         {{ home_script | safe }}
         // Home Functionality Js
+
+
+        // TODO Universal Searchbar code only here for highlighting section
+        let searchTimeout;
+        const workplaceId = "{{ workplace.id }}";
+
+        document.getElementById('workplace-search').addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            document.getElementById('searchResultsDropdown').style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetchSearchResults(query);
+        }, 300);
+        });
+
+        async function fetchSearchResults(query) {
+        try {
+            const response = await fetch(`/api/workplace-search?q=${encodeURIComponent(query)}&workplace_id=${workplaceId}`);
+            const results = await response.json();
+            displayResults(results);
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+        }
+
+        function displayResults(results) {
+        const container = document.getElementById('resultsContainer');
+        const dropdown = document.getElementById('searchResultsDropdown');
+        
+        if (results.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = results.map(result => `
+            <div class="search-result-item" onclick="navigateToResult('${result.type}', '${result.id}', '${result.url}')">
+            <span class="result-icon">
+                ${getIconForType(result.type)}
+            </span>
+            <div class="result-details">
+                <div>${escapeHtml(result.title)}</div>
+                <div class="result-location">
+                ${result.author ? `by ${escapeHtml(result.author)} • ` : ''}
+                ${escapeHtml(result.location)}
+                ${result.timestamp ? ` • ${formatDate(result.timestamp)}` : ''}
+                </div>
+            </div>
+            </div>
+        `).join('');
+        
+        dropdown.style.display = 'block';
+        }
+
+        function getIconForType(type) {
+        const icons = {
+            'message': '<i class="ri-message-2-line"></i>',
+            'file': '<i class="ri-file-line"></i>',
+            'task': '<i class="ri-task-line"></i>',
+            'project': '<i class="ri-project-line"></i>'
+        };
+        return icons[type] || '<i class="ri-question-line"></i>';
+        }
+
+        function navigateToResult(type, id, url) {
+        window.location.href = url;
+        }
+
+        function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+
+        function formatDate(timestamp) {
+        return new Date(timestamp).toLocaleDateString();
+        }
+
+        document.addEventListener('click', function(e) {
+        if (!e.target.closest('#workplace-search') && !e.target.closest('#searchResultsDropdown')) {
+            document.getElementById('searchResultsDropdown').style.display = 'none';
+        }
+        });
+        // TODO Universal Searchbar code only here for highlighting section
 
 
 

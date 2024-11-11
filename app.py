@@ -65,15 +65,30 @@ def index():
     logout_user()
     return render_template('index.html')
 
-@app.route('/aboutus')
-def aboutus():
+@app.route('/manual')
+def manual():
     logout_user()
-    return render_template('aboutus.html')
+    return render_template('manual.html')
+
+@app.route('/policies')
+def policies():
+    logout_user()
+    return render_template('policies.html')
+
+@app.route('/contact')
+def contactus():
+    logout_user()
+    return render_template('contact.html')
 
 @app.route('/home')
 def home():
     logout_user()
     return render_template('index.html')
+
+@app.route('/feature')
+def feature():
+    logout_user()
+    return render_template('feature.html')
 
 
 # Register blueprints

@@ -1,0 +1,143 @@
+{% from "macros/imports.html" import head_imports %}
+{% from "macros/imports.html" import bootstrap_scripts %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ head_imports() }}
+    <title>Contact Us - Collabospace</title>
+    <style>
+        .contact-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .contact-section {
+            background-color: var(--bs-body-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .contact-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--search-bar-color);
+        }
+
+        .info-item i {
+            font-size: 24px;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(var(--secondary-color-rgb), 0.25);
+        }
+
+        .contact-title {
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top" style="background-color: var(--secondary-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/" style="color: var(--bg-color);">
+                <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="Logo" style="height: 40px;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarScroll">
+                <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home" style="color: var(--bg-color);">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manual" style="color: var(--bg-color);">Manual</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--bg-color);">Resources</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/policies">Our Policies</a></li>
+                            <li><a class="dropdown-item" href="/contact">Contact Us</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/feature">Demo</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex" style="gap: 10px;">
+                    <a href="/login" class="btn btn-outline-light">Login</a>
+                    <a href="/register" class="btn btn-outline-light">Get Started</a>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contact Content -->
+    <div class="contact-container">
+        <h1 class="contact-title">Contact Us</h1>
+
+        <div class="contact-info">
+            <div class="info-item">
+                <i class="ri-mail-line"></i>
+                <h5>Email</h5>
+                <p>support@collabospace.com</p>
+            </div>
+            <div class="info-item">
+                <i class="ri-phone-line"></i>
+                <h5>Phone</h5>
+                <p>+61 413622699</p>
+            </div>
+            <div class="info-item">
+                <i class="ri-map-pin-line"></i>
+                <h5>Location</h5>
+                <p>ACT, Australia</p>
+            </div>
+        </div>
+
+        <div class="contact-section">
+            <h4 class="mb-4">Send us a message</h4>
+            <form action="/submit-contact" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-control" name="subject" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-control" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    {{ bootstrap_scripts() }}
+</body>
+</html>
