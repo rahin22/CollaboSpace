@@ -2,7 +2,7 @@
 {% from "macros/imports.html" import bootstrap_scripts %}
 {% from "macros/logo.html" import svg_logo %}
 {% from "macros/codeModal.html" import code_modal %}
-{% from "macros/sidebar.html" import user_sidebar %}
+{% from "macros/sidebar.html" import user_small_sidebar %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +28,7 @@
 </head>
 
 <body>
-    {{ user_sidebar(organization, current_user, svg_logo) }}
+    {{ user_small_sidebar(organization, current_user, svg_logo) }}
 
     {{ bootstrap_scripts() }}
     <script src="{{ url_for('static', filename='main.js') }}"></script>

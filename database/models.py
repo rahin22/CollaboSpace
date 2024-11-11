@@ -146,6 +146,7 @@ class Conversation(db.Model):
     title = db.Column(db.String(100), nullable=True)
     workplace_id = db.Column(db.Integer, db.ForeignKey('workplace.id'), nullable=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True, unique=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=True) 
     conversation_type = db.Column(db.String(50), nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -157,6 +158,7 @@ class Conversation(db.Model):
 
     messages = db.relationship('Message', backref='conversation', lazy=True)
     participants = db.relationship('User', secondary='conversation_participants', backref='conversations', lazy=True)
+    organization = db.relationship('Organization', backref='conversations')
 
 
 # Conversation Participants Table

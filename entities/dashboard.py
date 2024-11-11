@@ -229,3 +229,77 @@ def organization_profile(organization_id):
     
     return render_template('organization_profile.html', profile=profile_data, organization=organization, now=datetime.now())
     
+
+
+
+@dashboard.route('/settings/<int:organization_id>')
+@login_required
+def settings(organization_id):
+    organization = Organization.query.get_or_404(organization_id)
+    
+    return render_template('user_settings.html',  organization=organization)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@dashboard.route('/update_profile/<int:organization_id>', methods=['POST'])
+@login_required
+def update_profile(organization_id):
+    if request.method == 'POST':
+        try:
+            current_user.username = request.form['username']
+            current_user.email = request.form['email']
+            current_user.first_name = request.form['first_name']
+            current_user.last_name = request.form['last_name']
+
+            if 'profile_picture' in request.files:
+                file = request.files['profile_picture']
+                if file and allowed_file(file.filename):
+                    current_user.pfp = file.read()
+
+            db.session.commit()
+            flash('Profile updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating profile', 'error')
+            
+    return redirect(url_for('dashboard.settings', organization_id=organization_id))
+
+
+
+@dashboard.route('/update_password/<int:organization_id>', methods=['POST'])
+@login_required
+def update_password(organization_id):
+    if request.method == 'POST':
+        if  pbkdf2_sha256.verify(request.form['current_password']):
+            if request.form['new_password'] == request.form['confirm_password']:
+                current_user.password_hash = pbkdf2_sha256.hash(request.form['new_password'])
+                db.session.commit()
+                flash('Password updated successfully', 'success')
+            else:
+                flash('New passwords do not match', 'error')
+        else:
+            flash('Current password is incorrect', 'error')
+    return redirect(url_for('dashboard.settings', organization_id=organization_id))
+
+@dashboard.route('/leave_organization/<int:org_id>', methods=['POST'])
+@login_required
+def leave_organization(org_id):
+    org = Organization.query.get_or_404(org_id)
+    if org.admin_id == current_user.id:
+        return jsonify({'error': 'Administrators cannot leave their organization'}), 400
+    
+    employee = Employee_Info.query.filter_by(
+        user_id=current_user.id,
+        organization_id=org_id
+    ).first()
+    
+    if employee:
+        db.session.delete(employee)
+        db.session.commit()
+        return jsonify({'message': 'Successfully left organization'})
+    
+    return jsonify({'error': 'User is not a member of this organization'}), 404

@@ -239,6 +239,18 @@
 }
 
 
+
+#small-message-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 4.5rem;
+    transition: width 0.3s ease;
+}
+
+
+
 /* Dashboard Styles */
 
 
