@@ -14,16 +14,20 @@ from entities.messages import messages as msg_bp
 from entities.tasks import tasks as task_bp
 from entities.project import projects as proj_bp
 from datetime import datetime
+from dotenv import load_dotenv
+
+
 
 
 # Initialize app parameters
 app = Flask(__name__)
+load_dotenv()
 folderPath = os.path.dirname(os.path.abspath(__file__))
 app.config["FOLDER_PATH"] = folderPath
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + folderPath + "/master.db"
 app.config["SECRET_KEY"] = 'zR11b652Ue6tMD8SavPNvxk9EFJ5i7jZ'
-app.config['GOOGLE_CLIENT_ID'] = '252762485167-mfkbhptap3qmf9ca7p6ld92mvpmpv4ou.apps.googleusercontent.com'
-app.config['GOOGLE_CLIENT_SECRET'] = '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'
+app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
+app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
 
